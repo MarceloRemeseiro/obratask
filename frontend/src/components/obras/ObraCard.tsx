@@ -45,7 +45,16 @@ export function ObraCard({ obra }: ObraCardProps) {
             </p>
           )}
           <div className="flex flex-wrap gap-2 md:gap-4 text-xs md:text-sm text-muted-foreground">
-            {obra.fechaInicioPrev && (
+            {obra.estado === EstadoObra.COMPLETADA && obra.fechaInicioReal ? (
+              <div className="flex items-center gap-1">
+                <Calendar className="h-3 w-3 md:h-4 md:w-4" />
+                <span>
+                  {format(new Date(obra.fechaInicioReal), 'dd MMM', { locale: es })}
+                  {obra.fechaFinReal &&
+                    ` - ${format(new Date(obra.fechaFinReal), 'dd MMM', { locale: es })}`}
+                </span>
+              </div>
+            ) : obra.fechaInicioPrev && (
               <div className="flex items-center gap-1">
                 <Calendar className="h-3 w-3 md:h-4 md:w-4" />
                 <span>
