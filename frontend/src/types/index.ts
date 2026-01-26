@@ -191,6 +191,8 @@ export interface CreateObraDto {
   descripcion?: string;
   fechaInicioPrev?: string;
   fechaFinPrev?: string;
+  fechaInicioReal?: string;
+  fechaFinReal?: string;
 }
 
 export interface CreateTareaDto {

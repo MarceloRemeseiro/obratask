@@ -29,6 +29,8 @@ export function ObraForm({ obra, onSuccess }: ObraFormProps) {
     descripcion: obra?.descripcion || '',
     fechaInicioPrev: obra?.fechaInicioPrev?.split('T')[0] || '',
     fechaFinPrev: obra?.fechaFinPrev?.split('T')[0] || '',
+    fechaInicioReal: obra?.fechaInicioReal?.split('T')[0] || '',
+    fechaFinReal: obra?.fechaFinReal?.split('T')[0] || '',
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -90,30 +92,62 @@ export function ObraForm({ obra, onSuccess }: ObraFormProps) {
               rows={3}
             />
           </div>
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="fechaInicioPrev">Fecha inicio prevista</Label>
-              <Input
-                id="fechaInicioPrev"
-                type="date"
-                value={formData.fechaInicioPrev}
-                onChange={(e) =>
-                  setFormData({ ...formData, fechaInicioPrev: e.target.value })
-                }
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="fechaFinPrev">Fecha fin prevista</Label>
-              <Input
-                id="fechaFinPrev"
-                type="date"
-                value={formData.fechaFinPrev}
-                onChange={(e) =>
-                  setFormData({ ...formData, fechaFinPrev: e.target.value })
-                }
-              />
+          <div className="space-y-3">
+            <p className="text-sm font-medium text-muted-foreground">Fechas previstas</p>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="fechaInicioPrev">Inicio</Label>
+                <Input
+                  id="fechaInicioPrev"
+                  type="date"
+                  value={formData.fechaInicioPrev}
+                  onChange={(e) =>
+                    setFormData({ ...formData, fechaInicioPrev: e.target.value })
+                  }
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="fechaFinPrev">Fin</Label>
+                <Input
+                  id="fechaFinPrev"
+                  type="date"
+                  value={formData.fechaFinPrev}
+                  onChange={(e) =>
+                    setFormData({ ...formData, fechaFinPrev: e.target.value })
+                  }
+                />
+              </div>
             </div>
           </div>
+          {obra && (
+            <div className="space-y-3">
+              <p className="text-sm font-medium text-muted-foreground">Fechas reales</p>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="fechaInicioReal">Inicio</Label>
+                  <Input
+                    id="fechaInicioReal"
+                    type="date"
+                    value={formData.fechaInicioReal}
+                    onChange={(e) =>
+                      setFormData({ ...formData, fechaInicioReal: e.target.value })
+                    }
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="fechaFinReal">Fin</Label>
+                  <Input
+                    id="fechaFinReal"
+                    type="date"
+                    value={formData.fechaFinReal}
+                    onChange={(e) =>
+                      setFormData({ ...formData, fechaFinReal: e.target.value })
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+          )}
           <div className="flex justify-end gap-2">
             <Button
               type="button"

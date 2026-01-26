@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
-import { Tarea } from '../database/entities/tarea.entity';
+import { Tarea, EstadoTarea } from '../database/entities/tarea.entity';
 import { Obra } from '../database/entities/obra.entity';
 import { CreateTareaDto } from './dto/create-tarea.dto';
 import { UpdateTareaDto } from './dto/update-tarea.dto';
@@ -59,6 +59,7 @@ export class TareasService {
 
   async update(id: string, updateTareaDto: UpdateTareaDto): Promise<Tarea> {
     const tarea = await this.findOne(id);
+    const estadoAnterior = tarea.estado;
 
     // Limpiar la relación trabajador antes de asignar para evitar conflictos con TypeORM
     delete (tarea as any).trabajador;
@@ -66,8 +67,25 @@ export class TareasService {
     Object.assign(tarea, updateTareaDto);
     await this.tareaRepository.save(tarea);
 
+    // Si el estado cambió de PENDIENTE a EN_PROGRESO o COMPLETADO, actualizar fechaInicioReal de la obra
+    if (
+      estadoAnterior === EstadoTarea.PENDIENTE &&
+      (updateTareaDto.estado === EstadoTarea.EN_PROGRESO ||
+        updateTareaDto.estado === EstadoTarea.COMPLETADO)
+    ) {
+      await this.actualizarFechaInicioObraSiNecesario(tarea.obraId);
+    }
+
     // Re-fetch to get updated relations
     return this.findOne(id);
+  }
+
+  private async actualizarFechaInicioObraSiNecesario(obraId: string): Promise<void> {
+    const obra = await this.obraRepository.findOne({ where: { id: obraId } });
+    if (obra && !obra.fechaInicioReal) {
+      obra.fechaInicioReal = new Date();
+      await this.obraRepository.save(obra);
+    }
   }
 
   async remove(id: string): Promise<void> {
