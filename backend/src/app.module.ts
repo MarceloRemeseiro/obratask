@@ -17,6 +17,7 @@ import { ObrasModule } from './obras/obras.module';
 import { TareasModule } from './tareas/tareas.module';
 import { SubtareasModule } from './subtareas/subtareas.module';
 import { ArchivosModule } from './archivos/archivos.module';
+import { RevisionModule } from './revision/revision.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { ArchivosModule } from './archivos/archivos.module';
     TareasModule,
     SubtareasModule,
     ArchivosModule,
+    RevisionModule,
   ],
   controllers: [AppController],
   providers: [AppService],

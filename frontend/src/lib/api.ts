@@ -14,6 +14,8 @@ import type {
   AsignarTrabajadorDto,
   CreateAusenciaDto,
   EstadoTarea,
+  RevisionResponse,
+  RevisionCounts,
 } from '@/types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
@@ -206,4 +208,10 @@ export const archivosApi = {
   getSignedUrl: (id: string) => fetchApi<string>(`/archivos/${id}/url`),
   delete: (id: string) =>
     fetchApi<void>(`/archivos/${id}`, { method: 'DELETE' }),
+};
+
+// Revision
+export const revisionApi = {
+  getAll: () => fetchApi<RevisionResponse>('/revision'),
+  getCounts: () => fetchApi<RevisionCounts>('/revision/counts'),
 };

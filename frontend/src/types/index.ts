@@ -199,7 +199,7 @@ export interface CreateTareaDto {
   prioridad?: PrioridadTarea;
   orden?: number;
   fechaLimite?: string;
-  trabajadorId?: string;
+  trabajadorId?: string | null;
 }
 
 export interface UpdateTareaDto extends Partial<CreateTareaDto> {
@@ -218,4 +218,78 @@ export interface AsignarTrabajadorDto {
   fechaInicio: string;
   fechaFin?: string;
   notas?: string;
+}
+
+// Revision types
+export interface TrabajadorBaja {
+  id: string;
+  nombre: string;
+  cargo: string;
+  tipoAusencia: string;
+  fechaInicio: string;
+  fechaFin: string | null;
+  notas: string | null;
+}
+
+export interface ObraSinPersonal {
+  id: string;
+  nombre: string;
+  estado: string;
+  fechaInicioPrev: string | null;
+  fechaFinPrev: string | null;
+}
+
+export interface ObraListaCerrar {
+  id: string;
+  nombre: string;
+  tareasCompletadas: number;
+  fechaFinPrev: string | null;
+}
+
+export interface AsignacionPendiente {
+  id: string;
+  obraId: string;
+  obraNombre: string;
+  trabajadorId: string;
+  trabajadorNombre: string;
+  fechaInicio: string;
+  fechaFin: string | null;
+}
+
+export interface TareaVencida {
+  id: string;
+  titulo: string;
+  obraId: string;
+  obraNombre: string;
+  fechaLimite: string;
+  estado: string;
+  prioridad: string;
+}
+
+export interface ObraVencida {
+  id: string;
+  nombre: string;
+  estado: string;
+  fechaFinPrev: string;
+  diasVencida: number;
+}
+
+export interface RevisionCounts {
+  trabajadoresBaja: number;
+  obrasSinPersonal: number;
+  obrasListasCerrar: number;
+  asignacionesPendientes: number;
+  tareasVencidas: number;
+  obrasVencidas: number;
+  total: number;
+}
+
+export interface RevisionResponse {
+  counts: RevisionCounts;
+  trabajadoresBaja: TrabajadorBaja[];
+  obrasSinPersonal: ObraSinPersonal[];
+  obrasListasCerrar: ObraListaCerrar[];
+  asignacionesPendientes: AsignacionPendiente[];
+  tareasVencidas: TareaVencida[];
+  obrasVencidas: ObraVencida[];
 }
