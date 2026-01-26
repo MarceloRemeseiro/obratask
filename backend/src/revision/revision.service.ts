@@ -178,12 +178,20 @@ export class RevisionService {
   }
 
   private async getObrasListasCerrar(): Promise<ObraListaCerrarDto[]> {
+    // El estado se calcula dinámicamente, así que hay que cargar las tareas
     const obras = await this.obraRepository.find({
-      where: { estado: EstadoObra.LISTA_PARA_CERRAR },
+      where: { cerradaManualmente: false },
       relations: ['tareas'],
     });
 
-    return obras.map((obra) => ({
+    // Filtrar las que tienen todas las tareas completadas (y al menos una tarea)
+    const obrasListasCerrar = obras.filter((obra) => {
+      const tareas = obra.tareas || [];
+      if (tareas.length === 0) return false;
+      return tareas.every((t) => t.estado === EstadoTarea.COMPLETADO);
+    });
+
+    return obrasListasCerrar.map((obra) => ({
       id: obra.id,
       nombre: obra.nombre,
       tareasCompletadas: obra.tareas?.length || 0,
@@ -192,9 +200,16 @@ export class RevisionService {
   }
 
   private async countObrasListasCerrar(): Promise<number> {
-    return this.obraRepository.count({
-      where: { estado: EstadoObra.LISTA_PARA_CERRAR },
+    const obras = await this.obraRepository.find({
+      where: { cerradaManualmente: false },
+      relations: ['tareas'],
     });
+
+    return obras.filter((obra) => {
+      const tareas = obra.tareas || [];
+      if (tareas.length === 0) return false;
+      return tareas.every((t) => t.estado === EstadoTarea.COMPLETADO);
+    }).length;
   }
 
   private async getAsignacionesPendientes(): Promise<AsignacionPendienteDto[]> {
