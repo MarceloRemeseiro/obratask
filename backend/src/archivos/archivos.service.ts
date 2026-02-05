@@ -6,9 +6,7 @@ import {
   S3Client,
   PutObjectCommand,
   DeleteObjectCommand,
-  GetObjectCommand,
 } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { v4 as uuid } from 'uuid';
 import { Archivo, TipoArchivo } from '../database/entities/archivo.entity';
 import { UpdateArchivoDto } from './dto/update-archivo.dto';
@@ -17,7 +15,7 @@ import { UpdateArchivoDto } from './dto/update-archivo.dto';
 export class ArchivosService {
   private s3Client: S3Client;
   private bucket: string;
-  private endpoint: string;
+  private publicEndpoint: string;
 
   constructor(
     @InjectRepository(Archivo)
@@ -28,11 +26,14 @@ export class ArchivosService {
     const port = configService.get('MINIO_PORT');
     const useSSL = configService.get('MINIO_USE_SSL') === 'true';
 
-    this.endpoint = `${useSSL ? 'https' : 'http'}://${endpoint}:${port}`;
+    const internalEndpoint = `${useSSL ? 'https' : 'http'}://${endpoint}:${port}`;
     this.bucket = configService.get('MINIO_BUCKET') || 'obratask';
 
+    // Public URL for accessing files (use MINIO_PUBLIC_URL in production)
+    this.publicEndpoint = configService.get('MINIO_PUBLIC_URL') || internalEndpoint;
+
     this.s3Client = new S3Client({
-      endpoint: this.endpoint,
+      endpoint: internalEndpoint,
       region: 'us-east-1',
       credentials: {
         accessKeyId: configService.get('MINIO_ACCESS_KEY') || 'minioadmin',
@@ -71,7 +72,7 @@ export class ArchivosService {
       descripcion,
       tipo: file.mimetype,
       tipoArchivo,
-      url: `${this.endpoint}/${this.bucket}/${fileKey}`,
+      url: `${this.publicEndpoint}/${this.bucket}/${fileKey}`,
       tamanio: file.size,
       obraId,
       tareaId,
@@ -108,11 +109,8 @@ export class ArchivosService {
 
   async getSignedUrl(id: string): Promise<string> {
     const archivo = await this.findOne(id);
-    const command = new GetObjectCommand({
-      Bucket: this.bucket,
-      Key: archivo.nombre,
-    });
-    return getSignedUrl(this.s3Client, command, { expiresIn: 3600 });
+    // Return public URL directly (bucket has public read access)
+    return `${this.publicEndpoint}/${this.bucket}/${archivo.nombre}`;
   }
 
   async remove(id: string): Promise<void> {
