@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { APP_GUARD } from '@nestjs/core';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
@@ -12,6 +13,8 @@ import { TrabajadorAusencia } from './database/entities/trabajador-ausencia.enti
 import { ObraTrabajador } from './database/entities/obra-trabajador.entity';
 import { Archivo } from './database/entities/archivo.entity';
 
+import { AuthModule } from './auth/auth.module';
+import { JwtAuthGuard } from './auth/jwt-auth.guard';
 import { TrabajadoresModule } from './trabajadores/trabajadores.module';
 import { ObrasModule } from './obras/obras.module';
 import { TareasModule } from './tareas/tareas.module';
@@ -38,6 +41,7 @@ import { RevisionModule } from './revision/revision.module';
       }),
       inject: [ConfigService],
     }),
+    AuthModule,
     TrabajadoresModule,
     ObrasModule,
     TareasModule,
@@ -46,6 +50,12 @@ import { RevisionModule } from './revision/revision.module';
     RevisionModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

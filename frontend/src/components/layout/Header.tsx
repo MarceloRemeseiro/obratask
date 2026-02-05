@@ -1,14 +1,24 @@
 'use client';
 
-import { HardHat } from 'lucide-react';
+import { HardHat, LogOut } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { Button } from '@/components/ui/button';
+import { authApi } from '@/lib/api';
 
 interface HeaderProps {
   title?: string;
 }
 
 export function Header({ title }: HeaderProps) {
+  const router = useRouter();
+
+  const handleLogout = () => {
+    authApi.logout();
+    router.push('/login');
+  };
+
   return (
     <header className="md:hidden sticky top-0 z-40 bg-background border-b">
       <div className="flex items-center justify-between h-14 px-4">
@@ -23,6 +33,14 @@ export function Header({ title }: HeaderProps) {
             </span>
           )}
           <ThemeToggle />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleLogout}
+            title="Cerrar sesión"
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
         </div>
       </div>
     </header>

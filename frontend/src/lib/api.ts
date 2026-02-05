@@ -20,17 +20,45 @@ import type {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
 
+// Auth helpers
+export const getToken = () => {
+  if (typeof window === 'undefined') return null;
+  return localStorage.getItem('token');
+};
+
+export const setToken = (token: string) => {
+  localStorage.setItem('token', token);
+};
+
+export const removeToken = () => {
+  localStorage.removeItem('token');
+};
+
+export const isAuthenticated = () => {
+  return !!getToken();
+};
+
 async function fetchApi<T>(
   endpoint: string,
   options?: RequestInit
 ): Promise<T> {
+  const token = getToken();
   const res = await fetch(`${API_URL}${endpoint}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...options?.headers,
     },
   });
+
+  if (res.status === 401) {
+    removeToken();
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login';
+    }
+    throw new Error('No autorizado');
+  }
 
   if (!res.ok) {
     const error = await res.json().catch(() => ({}));
@@ -50,6 +78,27 @@ async function fetchApi<T>(
 
   return JSON.parse(text);
 }
+
+// Auth API
+export const authApi = {
+  login: async (username: string, password: string) => {
+    const res = await fetch(`${API_URL}/auth/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username, password }),
+    });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.message || 'Error de autenticación');
+    }
+    const data = await res.json();
+    setToken(data.access_token);
+    return data;
+  },
+  logout: () => {
+    removeToken();
+  },
+};
 
 // Trabajadores
 export const trabajadoresApi = {
@@ -194,10 +243,18 @@ export const archivosApi = {
     if (tareaId) params.append('tareaId', tareaId);
     const query = params.toString();
 
+    const token = getToken();
     const res = await fetch(`${API_URL}/archivos${query ? `?${query}` : ''}`, {
       method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
       body: formData,
     });
+
+    if (res.status === 401) {
+      removeToken();
+      window.location.href = '/login';
+      throw new Error('No autorizado');
+    }
 
     if (!res.ok) {
       throw new Error('Error al subir archivo');

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import {
   Building2,
@@ -12,10 +12,12 @@ import {
   HardHat,
   ClipboardList,
   AlertCircle,
+  LogOut,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Badge } from '@/components/ui/badge';
-import { revisionApi } from '@/lib/api';
+import { Button } from '@/components/ui/button';
+import { revisionApi, authApi } from '@/lib/api';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: Home },
@@ -28,6 +30,7 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const router = useRouter();
   const [revisionCount, setRevisionCount] = useState(0);
 
   useEffect(() => {
@@ -44,6 +47,11 @@ export function Sidebar() {
     const interval = setInterval(fetchCount, 60000);
     return () => clearInterval(interval);
   }, []);
+
+  const handleLogout = () => {
+    authApi.logout();
+    router.push('/login');
+  };
 
   return (
     <aside className="hidden md:flex flex-col w-64 bg-background border-r h-screen fixed left-0 top-0">
@@ -91,8 +99,17 @@ export function Sidebar() {
         </ul>
       </nav>
       <div className="p-4 border-t flex items-center justify-between">
-        <p className="text-xs text-muted-foreground">obraTask v1.0</p>
-        <ThemeToggle />
+        <div className="flex items-center gap-2">
+          <ThemeToggle />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleLogout}
+            title="Cerrar sesión"
+          >
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
     </aside>
   );
