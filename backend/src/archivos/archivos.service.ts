@@ -10,7 +10,8 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { v4 as uuid } from 'uuid';
-import { Archivo } from '../database/entities/archivo.entity';
+import { Archivo, TipoArchivo } from '../database/entities/archivo.entity';
+import { UpdateArchivoDto } from './dto/update-archivo.dto';
 
 @Injectable()
 export class ArchivosService {
@@ -45,6 +46,8 @@ export class ArchivosService {
     file: Express.Multer.File,
     obraId?: string,
     tareaId?: string,
+    titulo?: string,
+    descripcion?: string,
   ): Promise<Archivo> {
     const fileKey = `${uuid()}-${file.originalname}`;
 
@@ -57,10 +60,17 @@ export class ArchivosService {
       }),
     );
 
+    // Determine if it's a photo based on mimetype
+    const isImage = file.mimetype.startsWith('image/');
+    const tipoArchivo = isImage ? TipoArchivo.FOTO : TipoArchivo.DOCUMENTO;
+
     const archivo = this.archivoRepository.create({
       nombre: fileKey,
       nombreOriginal: file.originalname,
+      titulo: titulo || file.originalname,
+      descripcion,
       tipo: file.mimetype,
+      tipoArchivo,
       url: `${this.endpoint}/${this.bucket}/${fileKey}`,
       tamanio: file.size,
       obraId,
@@ -70,15 +80,22 @@ export class ArchivosService {
     return this.archivoRepository.save(archivo);
   }
 
-  async findAll(obraId?: string, tareaId?: string): Promise<Archivo[]> {
+  async findAll(obraId?: string, tareaId?: string, tipoArchivo?: TipoArchivo): Promise<Archivo[]> {
     const where: any = {};
     if (obraId) where.obraId = obraId;
     if (tareaId) where.tareaId = tareaId;
+    if (tipoArchivo) where.tipoArchivo = tipoArchivo;
 
     return this.archivoRepository.find({
       where,
       order: { createdAt: 'DESC' },
     });
+  }
+
+  async update(id: string, updateArchivoDto: UpdateArchivoDto): Promise<Archivo> {
+    const archivo = await this.findOne(id);
+    Object.assign(archivo, updateArchivoDto);
+    return this.archivoRepository.save(archivo);
   }
 
   async findOne(id: string): Promise<Archivo> {

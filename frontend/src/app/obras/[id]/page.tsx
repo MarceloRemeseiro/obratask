@@ -10,6 +10,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { KanbanBoard } from '@/components/tareas/KanbanBoard';
 import { ObraForm } from '@/components/obras/ObraForm';
 import { AsignarTrabajadorModal } from '@/components/obras/AsignarTrabajadorModal';
+import { ArchivosTab } from '@/components/archivos/ArchivosTab';
+import { FotosTab } from '@/components/archivos/FotosTab';
 import { obrasApi } from '@/lib/api';
 import { Obra, EstadoObra, ObraTrabajador } from '@/types';
 import {
@@ -22,6 +24,7 @@ import {
   Phone,
   Mail,
   AlertCircle,
+  Image,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -212,6 +215,7 @@ export default function ObraDetailPage() {
           <TabsTrigger value="tareas">Tareas</TabsTrigger>
           <TabsTrigger value="equipo">Equipo</TabsTrigger>
           <TabsTrigger value="archivos">Archivos</TabsTrigger>
+          <TabsTrigger value="fotos">Fotos</TabsTrigger>
         </TabsList>
 
         <TabsContent value="tareas" className="mt-4">
@@ -303,12 +307,11 @@ export default function ObraDetailPage() {
         </TabsContent>
 
         <TabsContent value="archivos" className="mt-4">
-          <Card>
-            <CardContent className="py-8 text-center text-muted-foreground">
-              <FileText className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p>Funcionalidad de archivos proximamente</p>
-            </CardContent>
-          </Card>
+          <ArchivosTab obraId={obraId} />
+        </TabsContent>
+
+        <TabsContent value="fotos" className="mt-4">
+          <FotosTab obraId={obraId} />
         </TabsContent>
       </Tabs>
     </div>

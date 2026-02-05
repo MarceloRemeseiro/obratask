@@ -9,6 +9,11 @@ import {
 import { Obra } from './obra.entity';
 import { Tarea } from './tarea.entity';
 
+export enum TipoArchivo {
+  DOCUMENTO = 'DOCUMENTO',
+  FOTO = 'FOTO',
+}
+
 @Entity('archivos')
 export class Archivo {
   @PrimaryGeneratedColumn('uuid')
@@ -20,8 +25,21 @@ export class Archivo {
   @Column()
   nombreOriginal: string;
 
+  @Column({ nullable: true })
+  titulo: string;
+
+  @Column({ nullable: true })
+  descripcion: string;
+
   @Column()
   tipo: string;
+
+  @Column({
+    type: 'enum',
+    enum: TipoArchivo,
+    default: TipoArchivo.DOCUMENTO,
+  })
+  tipoArchivo: TipoArchivo;
 
   @Column()
   url: string;

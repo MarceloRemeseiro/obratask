@@ -2,9 +2,11 @@ import {
   Controller,
   Get,
   Post,
+  Patch,
   Param,
   Delete,
   Query,
+  Body,
   UseInterceptors,
   UploadedFile,
   ParseUUIDPipe,
@@ -19,6 +21,8 @@ import {
   ApiQuery,
 } from '@nestjs/swagger';
 import { ArchivosService } from './archivos.service';
+import { UpdateArchivoDto } from './dto/update-archivo.dto';
+import { TipoArchivo } from '../database/entities/archivo.entity';
 
 @ApiTags('Archivos')
 @Controller('archivos')
@@ -36,6 +40,8 @@ export class ArchivosController {
         file: { type: 'string', format: 'binary' },
         obraId: { type: 'string' },
         tareaId: { type: 'string' },
+        titulo: { type: 'string' },
+        descripcion: { type: 'string' },
       },
     },
   })
@@ -44,20 +50,24 @@ export class ArchivosController {
     @UploadedFile() file: Express.Multer.File,
     @Query('obraId') obraId?: string,
     @Query('tareaId') tareaId?: string,
+    @Query('titulo') titulo?: string,
+    @Query('descripcion') descripcion?: string,
   ) {
-    return this.archivosService.upload(file, obraId, tareaId);
+    return this.archivosService.upload(file, obraId, tareaId, titulo, descripcion);
   }
 
   @Get()
   @ApiOperation({ summary: 'Obtener archivos' })
   @ApiQuery({ name: 'obraId', required: false })
   @ApiQuery({ name: 'tareaId', required: false })
+  @ApiQuery({ name: 'tipoArchivo', required: false, enum: TipoArchivo })
   @ApiResponse({ status: 200, description: 'Lista de archivos' })
   findAll(
     @Query('obraId') obraId?: string,
     @Query('tareaId') tareaId?: string,
+    @Query('tipoArchivo') tipoArchivo?: TipoArchivo,
   ) {
-    return this.archivosService.findAll(obraId, tareaId);
+    return this.archivosService.findAll(obraId, tareaId, tipoArchivo);
   }
 
   @Get(':id')
@@ -73,6 +83,16 @@ export class ArchivosController {
   @ApiResponse({ status: 200, description: 'URL firmada' })
   getSignedUrl(@Param('id', ParseUUIDPipe) id: string) {
     return this.archivosService.getSignedUrl(id);
+  }
+
+  @Patch(':id')
+  @ApiOperation({ summary: 'Actualizar titulo/descripcion de un archivo' })
+  @ApiResponse({ status: 200, description: 'Archivo actualizado' })
+  update(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Body() updateArchivoDto: UpdateArchivoDto,
+  ) {
+    return this.archivosService.update(id, updateArchivoDto);
   }
 
   @Delete(':id')

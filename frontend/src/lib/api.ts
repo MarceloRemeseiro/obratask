@@ -13,9 +13,11 @@ import type {
   CreateSubtareaDto,
   AsignarTrabajadorDto,
   CreateAusenciaDto,
+  UpdateArchivoDto,
   EstadoTarea,
   RevisionResponse,
   RevisionCounts,
+  TipoArchivo,
 } from '@/types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
@@ -223,24 +225,31 @@ export const subtareasApi = {
 
 // Archivos
 export const archivosApi = {
-  getAll: (filters?: { obraId?: string; tareaId?: string }) => {
+  getAll: (filters?: { obraId?: string; tareaId?: string; tipoArchivo?: TipoArchivo }) => {
     const params = new URLSearchParams();
     if (filters?.obraId) params.append('obraId', filters.obraId);
     if (filters?.tareaId) params.append('tareaId', filters.tareaId);
+    if (filters?.tipoArchivo) params.append('tipoArchivo', filters.tipoArchivo);
     const query = params.toString();
     return fetchApi<Archivo[]>(`/archivos${query ? `?${query}` : ''}`);
   },
   upload: async (
     file: File,
-    obraId?: string,
-    tareaId?: string
+    options?: {
+      obraId?: string;
+      tareaId?: string;
+      titulo?: string;
+      descripcion?: string;
+    }
   ): Promise<Archivo> => {
     const formData = new FormData();
     formData.append('file', file);
 
     const params = new URLSearchParams();
-    if (obraId) params.append('obraId', obraId);
-    if (tareaId) params.append('tareaId', tareaId);
+    if (options?.obraId) params.append('obraId', options.obraId);
+    if (options?.tareaId) params.append('tareaId', options.tareaId);
+    if (options?.titulo) params.append('titulo', options.titulo);
+    if (options?.descripcion) params.append('descripcion', options.descripcion);
     const query = params.toString();
 
     const token = getToken();
@@ -262,6 +271,11 @@ export const archivosApi = {
 
     return res.json();
   },
+  update: (id: string, data: UpdateArchivoDto) =>
+    fetchApi<Archivo>(`/archivos/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    }),
   getSignedUrl: (id: string) => fetchApi<string>(`/archivos/${id}/url`),
   delete: (id: string) =>
     fetchApi<void>(`/archivos/${id}`, { method: 'DELETE' }),

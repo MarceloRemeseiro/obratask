@@ -149,16 +149,29 @@ export interface ObraTrabajador {
   trabajador?: Trabajador;
 }
 
+export enum TipoArchivo {
+  DOCUMENTO = 'DOCUMENTO',
+  FOTO = 'FOTO',
+}
+
 export interface Archivo {
   id: string;
   nombre: string;
   nombreOriginal: string;
+  titulo?: string;
+  descripcion?: string;
   tipo: string;
+  tipoArchivo: TipoArchivo;
   url: string;
   tamanio?: number;
   obraId?: string;
   tareaId?: string;
   createdAt: string;
+}
+
+export interface UpdateArchivoDto {
+  titulo?: string;
+  descripcion?: string;
 }
 
 // DTOs
