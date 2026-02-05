@@ -235,6 +235,12 @@ export interface AsignarTrabajadorDto {
   notas?: string;
 }
 
+export interface UpdateAsignacionDto {
+  fechaInicio?: string;
+  fechaFin?: string;
+  notas?: string;
+}
+
 // Revision types
 export interface TrabajadorBaja {
   id: string;

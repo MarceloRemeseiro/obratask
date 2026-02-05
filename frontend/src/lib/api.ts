@@ -12,6 +12,7 @@ import type {
   UpdateTareaDto,
   CreateSubtareaDto,
   AsignarTrabajadorDto,
+  UpdateAsignacionDto,
   CreateAusenciaDto,
   UpdateArchivoDto,
   EstadoTarea,
@@ -167,6 +168,11 @@ export const obrasApi = {
   asignarTrabajador: (obraId: string, data: AsignarTrabajadorDto) =>
     fetchApi<ObraTrabajador>(`/obras/${obraId}/trabajadores`, {
       method: 'POST',
+      body: JSON.stringify(data),
+    }),
+  updateAsignacion: (obraId: string, asignacionId: string, data: UpdateAsignacionDto) =>
+    fetchApi<ObraTrabajador>(`/obras/${obraId}/trabajadores/${asignacionId}`, {
+      method: 'PATCH',
       body: JSON.stringify(data),
     }),
   desasignarTrabajador: (obraId: string, asignacionId: string) =>

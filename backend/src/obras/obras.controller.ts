@@ -13,6 +13,7 @@ import { ObrasService } from './obras.service';
 import { CreateObraDto } from './dto/create-obra.dto';
 import { UpdateObraDto } from './dto/update-obra.dto';
 import { AsignarTrabajadorDto } from './dto/asignar-trabajador.dto';
+import { UpdateAsignacionDto } from './dto/update-asignacion.dto';
 
 @ApiTags('Obras')
 @Controller('obras')
@@ -84,6 +85,17 @@ export class ObrasController {
     @Body() asignarTrabajadorDto: AsignarTrabajadorDto,
   ) {
     return this.obrasService.asignarTrabajador(id, asignarTrabajadorDto);
+  }
+
+  @Patch(':id/trabajadores/:asignacionId')
+  @ApiOperation({ summary: 'Actualizar una asignación de trabajador' })
+  @ApiResponse({ status: 200, description: 'Asignación actualizada' })
+  updateAsignacion(
+    @Param('id', ParseUUIDPipe) id: string,
+    @Param('asignacionId', ParseUUIDPipe) asignacionId: string,
+    @Body() updateAsignacionDto: UpdateAsignacionDto,
+  ) {
+    return this.obrasService.updateAsignacion(id, asignacionId, updateAsignacionDto);
   }
 
   @Delete(':id/trabajadores/:asignacionId')

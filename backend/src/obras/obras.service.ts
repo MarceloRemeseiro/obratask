@@ -9,6 +9,7 @@ import { TipoAusencia } from '../database/entities/enums';
 import { CreateObraDto } from './dto/create-obra.dto';
 import { UpdateObraDto } from './dto/update-obra.dto';
 import { AsignarTrabajadorDto } from './dto/asignar-trabajador.dto';
+import { UpdateAsignacionDto } from './dto/update-asignacion.dto';
 
 @Injectable()
 export class ObrasService {
@@ -188,6 +189,22 @@ export class ObrasService {
       throw new NotFoundException('Asignación no encontrada');
     }
     await this.obraTrabajadorRepository.remove(asignacion);
+  }
+
+  async updateAsignacion(
+    obraId: string,
+    asignacionId: string,
+    updateAsignacionDto: UpdateAsignacionDto,
+  ): Promise<ObraTrabajador> {
+    const asignacion = await this.obraTrabajadorRepository.findOne({
+      where: { id: asignacionId, obraId },
+      relations: ['trabajador'],
+    });
+    if (!asignacion) {
+      throw new NotFoundException('Asignación no encontrada');
+    }
+    Object.assign(asignacion, updateAsignacionDto);
+    return this.obraTrabajadorRepository.save(asignacion);
   }
 
   async getTrabajadores(obraId: string): Promise<ObraTrabajador[]> {

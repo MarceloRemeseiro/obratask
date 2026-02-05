@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { KanbanBoard } from '@/components/tareas/KanbanBoard';
 import { ObraForm } from '@/components/obras/ObraForm';
 import { AsignarTrabajadorModal } from '@/components/obras/AsignarTrabajadorModal';
+import { EditAsignacionModal } from '@/components/obras/EditAsignacionModal';
 import { ArchivosTab } from '@/components/archivos/ArchivosTab';
 import { FotosTab } from '@/components/archivos/FotosTab';
 import { obrasApi } from '@/lib/api';
@@ -25,6 +26,7 @@ import {
   Mail,
   AlertCircle,
   Image,
+  Pencil,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -46,6 +48,8 @@ export default function ObraDetailPage() {
   const [obra, setObra] = useState<Obra | null>(null);
   const [trabajadores, setTrabajadores] = useState<ObraTrabajador[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editingAsignacion, setEditingAsignacion] = useState<ObraTrabajador | null>(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
 
   const obraId = params.id as string;
 
@@ -291,13 +295,25 @@ export default function ObraDetailPage() {
                           <p className="text-xs mt-1">{asignacion.notas}</p>
                         )}
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDesasignar(asignacion.id)}
-                      >
-                        <Trash2 className="h-4 w-4 text-destructive" />
-                      </Button>
+                      <div className="flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => {
+                            setEditingAsignacion(asignacion);
+                            setEditModalOpen(true);
+                          }}
+                        >
+                          <Pencil className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDesasignar(asignacion.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -314,6 +330,14 @@ export default function ObraDetailPage() {
           <FotosTab obraId={obraId} />
         </TabsContent>
       </Tabs>
+
+      <EditAsignacionModal
+        obraId={obraId}
+        asignacion={editingAsignacion}
+        open={editModalOpen}
+        onOpenChange={setEditModalOpen}
+        onSuccess={loadObra}
+      />
     </div>
   );
 }
