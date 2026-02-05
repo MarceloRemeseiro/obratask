@@ -37,10 +37,15 @@ export function ObraForm({ obra, onSuccess }: ObraFormProps) {
     e.preventDefault();
     setLoading(true);
     try {
+      // Filter out empty strings
+      const dataToSend = Object.fromEntries(
+        Object.entries(formData).filter(([_, v]) => v !== '')
+      ) as CreateObraDto;
+
       if (obra) {
-        await obrasApi.update(obra.id, formData);
+        await obrasApi.update(obra.id, dataToSend);
       } else {
-        await obrasApi.create(formData);
+        await obrasApi.create(dataToSend);
       }
       setOpen(false);
       onSuccess?.();
