@@ -10,7 +10,12 @@ import {
   Max,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { TipoContrato, TipoCarnet } from '../../database/entities/enums';
+
+// Transform empty strings to undefined
+const EmptyToUndefined = () =>
+  Transform(({ value }) => (value === '' ? undefined : value));
 
 export class CreateTrabajadorDto {
   @ApiProperty({ example: 'Juan Pérez' })
@@ -20,37 +25,44 @@ export class CreateTrabajadorDto {
   @ApiPropertyOptional({ example: 'Albañil' })
   @IsOptional()
   @IsString()
+  @EmptyToUndefined()
   cargo?: string;
 
   @ApiPropertyOptional({ example: 'Especialista en acabados' })
   @IsOptional()
   @IsString()
+  @EmptyToUndefined()
   descripcion?: string;
 
   @ApiPropertyOptional({ example: '+34 612345678' })
   @IsOptional()
   @IsString()
+  @EmptyToUndefined()
   telefono?: string;
 
   @ApiPropertyOptional({ example: 'juan@example.com' })
   @IsOptional()
   @IsEmail()
+  @EmptyToUndefined()
   email?: string;
 
   // Contrato
   @ApiPropertyOptional({ enum: TipoContrato, example: TipoContrato.INDEFINIDO })
   @IsOptional()
   @IsEnum(TipoContrato)
+  @EmptyToUndefined()
   tipoContrato?: TipoContrato;
 
   @ApiPropertyOptional({ example: '2024-01-15' })
   @IsOptional()
   @IsDateString()
+  @EmptyToUndefined()
   fechaInicioContrato?: string;
 
   @ApiPropertyOptional({ example: '2024-12-31' })
   @IsOptional()
   @IsDateString()
+  @EmptyToUndefined()
   fechaFinContrato?: string;
 
   // Vacaciones
@@ -75,21 +87,25 @@ export class CreateTrabajadorDto {
   @ApiPropertyOptional({ enum: TipoCarnet, example: TipoCarnet.B })
   @IsOptional()
   @IsEnum(TipoCarnet)
+  @EmptyToUndefined()
   carnetConducir?: TipoCarnet;
 
   @ApiPropertyOptional({ example: '2028-06-15' })
   @IsOptional()
   @IsDateString()
+  @EmptyToUndefined()
   carnetConducirVencimiento?: string;
 
   // Documentación
   @ApiPropertyOptional({ example: '2025-03-01' })
   @IsOptional()
   @IsDateString()
+  @EmptyToUndefined()
   reconocimientoMedicoVencimiento?: string;
 
   @ApiPropertyOptional({ example: '2025-06-15' })
   @IsOptional()
   @IsDateString()
+  @EmptyToUndefined()
   formacionPRLVencimiento?: string;
 }

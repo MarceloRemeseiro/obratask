@@ -1,6 +1,11 @@
 import { IsString, IsOptional, IsDateString, IsEnum, IsNumber, IsUUID, ValidateIf } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { PrioridadTarea } from '../../database/entities/tarea.entity';
+
+// Transform empty strings to undefined
+const EmptyToUndefined = () =>
+  Transform(({ value }) => (value === '' ? undefined : value));
 
 export class CreateTareaDto {
   @ApiProperty({ example: 'Preparar cimientos' })
@@ -10,6 +15,7 @@ export class CreateTareaDto {
   @ApiPropertyOptional({ example: 'Excavar y preparar la base para los cimientos' })
   @IsOptional()
   @IsString()
+  @EmptyToUndefined()
   descripcion?: string;
 
   @ApiPropertyOptional({ enum: PrioridadTarea, example: 'ALTA' })
@@ -25,6 +31,7 @@ export class CreateTareaDto {
   @ApiPropertyOptional({ example: '2024-02-15' })
   @IsOptional()
   @IsDateString()
+  @EmptyToUndefined()
   fechaLimite?: string;
 
   @ApiPropertyOptional({ example: 'uuid-del-trabajador', nullable: true })
