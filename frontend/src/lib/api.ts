@@ -282,7 +282,14 @@ export const archivosApi = {
       method: 'PATCH',
       body: JSON.stringify(data),
     }),
-  getSignedUrl: (id: string) => fetchApi<string>(`/archivos/${id}/url`),
+  getSignedUrl: async (id: string): Promise<string> => {
+    const token = getToken();
+    const res = await fetch(`${API_URL}/archivos/${id}/url`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) throw new Error('Error getting URL');
+    return res.text();
+  },
   delete: (id: string) =>
     fetchApi<void>(`/archivos/${id}`, { method: 'DELETE' }),
 };

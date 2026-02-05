@@ -10,6 +10,7 @@ import {
   Users,
   Home,
   AlertCircle,
+  ClipboardList,
 } from 'lucide-react';
 import { revisionApi } from '@/lib/api';
 
@@ -17,6 +18,7 @@ const navItems = [
   { href: '/', label: 'Inicio', icon: Home },
   { href: '/obras', label: 'Obras', icon: Building2 },
   { href: '/revision', label: 'Revision', icon: AlertCircle, showBadge: true },
+  { href: '/planificacion', label: 'Planif.', icon: ClipboardList },
   { href: '/calendario', label: 'Calendario', icon: Calendar },
   { href: '/trabajadores', label: 'Equipo', icon: Users },
 ];

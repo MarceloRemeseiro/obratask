@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
 } from '@/components/ui/dialog';
 import { archivosApi } from '@/lib/api';
 import { Archivo, TipoArchivo } from '@/types';
@@ -208,6 +209,9 @@ export function FotosTab({ obraId }: FotosTabProps) {
       {/* Lightbox */}
       <Dialog open={!!selectedFoto} onOpenChange={() => setSelectedFoto(null)}>
         <DialogContent className="max-w-4xl p-0 overflow-hidden">
+          <DialogTitle className="sr-only">
+            {selectedFoto?.nombreOriginal || 'Vista de foto'}
+          </DialogTitle>
           {selectedFoto && (
             <div className="relative">
               <img
