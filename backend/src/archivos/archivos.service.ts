@@ -116,12 +116,17 @@ export class ArchivosService {
   async remove(id: string): Promise<void> {
     const archivo = await this.findOne(id);
 
-    await this.s3Client.send(
-      new DeleteObjectCommand({
-        Bucket: this.bucket,
-        Key: archivo.nombre,
-      }),
-    );
+    try {
+      await this.s3Client.send(
+        new DeleteObjectCommand({
+          Bucket: this.bucket,
+          Key: archivo.nombre,
+        }),
+      );
+    } catch (error) {
+      console.error('Error deleting from MinIO:', error);
+      // Continue to delete from DB even if MinIO delete fails
+    }
 
     await this.archivoRepository.remove(archivo);
   }
