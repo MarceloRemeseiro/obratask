@@ -13,6 +13,7 @@ import {
   ClipboardList,
   AlertCircle,
   LogOut,
+  Settings,
 } from 'lucide-react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Badge } from '@/components/ui/badge';
@@ -26,6 +27,7 @@ const navItems = [
   { href: '/planificacion', label: 'Planificacion', icon: ClipboardList },
   { href: '/calendario', label: 'Calendario', icon: Calendar },
   { href: '/trabajadores', label: 'Trabajadores', icon: Users },
+  { href: '/ajustes', label: 'Ajustes', icon: Settings },
 ];
 
 export function Sidebar() {

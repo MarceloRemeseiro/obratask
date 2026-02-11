@@ -21,6 +21,7 @@ import { TareasModule } from './tareas/tareas.module';
 import { SubtareasModule } from './subtareas/subtareas.module';
 import { ArchivosModule } from './archivos/archivos.module';
 import { RevisionModule } from './revision/revision.module';
+import { BackupModule } from './backup/backup.module';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { RevisionModule } from './revision/revision.module';
     SubtareasModule,
     ArchivosModule,
     RevisionModule,
+    BackupModule,
   ],
   controllers: [AppController],
   providers: [

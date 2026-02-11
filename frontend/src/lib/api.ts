@@ -299,3 +299,97 @@ export const revisionApi = {
   getAll: () => fetchApi<RevisionResponse>('/revision'),
   getCounts: () => fetchApi<RevisionCounts>('/revision/counts'),
 };
+
+// Backup
+export const backupApi = {
+  exportData: async (): Promise<Blob> => {
+    const token = getToken();
+    const res = await fetch(`${API_URL}/backup/data/export`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (res.status === 401) {
+      removeToken();
+      window.location.href = '/login';
+      throw new Error('No autorizado');
+    }
+    if (!res.ok) throw new Error('Error al exportar datos');
+    return res.blob();
+  },
+  importData: async (file: File): Promise<{ success: boolean; counts: Record<string, number> }> => {
+    const token = getToken();
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(`${API_URL}/backup/data/import`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+    if (res.status === 401) {
+      removeToken();
+      window.location.href = '/login';
+      throw new Error('No autorizado');
+    }
+    if (!res.ok) throw new Error('Error al importar datos');
+    return res.json();
+  },
+  exportFotos: async (): Promise<Blob> => {
+    const token = getToken();
+    const res = await fetch(`${API_URL}/backup/fotos/export`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (res.status === 401) {
+      removeToken();
+      window.location.href = '/login';
+      throw new Error('No autorizado');
+    }
+    if (!res.ok) throw new Error('Error al exportar fotos');
+    return res.blob();
+  },
+  importFotos: async (file: File): Promise<{ success: boolean; count: number }> => {
+    const token = getToken();
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(`${API_URL}/backup/fotos/import`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+    if (res.status === 401) {
+      removeToken();
+      window.location.href = '/login';
+      throw new Error('No autorizado');
+    }
+    if (!res.ok) throw new Error('Error al importar fotos');
+    return res.json();
+  },
+  exportDocumentos: async (): Promise<Blob> => {
+    const token = getToken();
+    const res = await fetch(`${API_URL}/backup/documentos/export`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (res.status === 401) {
+      removeToken();
+      window.location.href = '/login';
+      throw new Error('No autorizado');
+    }
+    if (!res.ok) throw new Error('Error al exportar documentos');
+    return res.blob();
+  },
+  importDocumentos: async (file: File): Promise<{ success: boolean; count: number }> => {
+    const token = getToken();
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(`${API_URL}/backup/documentos/import`, {
+      method: 'POST',
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+      body: formData,
+    });
+    if (res.status === 401) {
+      removeToken();
+      window.location.href = '/login';
+      throw new Error('No autorizado');
+    }
+    if (!res.ok) throw new Error('Error al importar documentos');
+    return res.json();
+  },
+};
