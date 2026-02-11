@@ -116,13 +116,13 @@ export class BackupService {
 
     try {
       // Delete children first
-      await queryRunner.manager.delete(Subtarea, {});
-      await queryRunner.manager.delete(Archivo, {});
-      await queryRunner.manager.delete(ObraTrabajador, {});
-      await queryRunner.manager.delete(Tarea, {});
-      await queryRunner.manager.delete(TrabajadorAusencia, {});
-      await queryRunner.manager.delete(Obra, {});
-      await queryRunner.manager.delete(Trabajador, {});
+      await queryRunner.query('DELETE FROM subtareas');
+      await queryRunner.query('DELETE FROM archivos');
+      await queryRunner.query('DELETE FROM obras_trabajadores');
+      await queryRunner.query('DELETE FROM tareas');
+      await queryRunner.query('DELETE FROM trabajador_ausencias');
+      await queryRunner.query('DELETE FROM obras');
+      await queryRunner.query('DELETE FROM trabajadores');
 
       const counts: Record<string, number> = {};
 
