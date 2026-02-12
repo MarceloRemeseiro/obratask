@@ -6,6 +6,7 @@ import type {
   ObraTrabajador,
   Archivo,
   TrabajadorAusencia,
+  TareaComentario,
   CreateTrabajadorDto,
   CreateObraDto,
   CreateTareaDto,
@@ -19,6 +20,9 @@ import type {
   RevisionResponse,
   RevisionCounts,
   TipoArchivo,
+  EncargadoResumen,
+  EncargadoDetalle,
+  VerifyResponse,
 } from '@/types';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api';
@@ -298,6 +302,126 @@ export const archivosApi = {
 export const revisionApi = {
   getAll: () => fetchApi<RevisionResponse>('/revision'),
   getCounts: () => fetchApi<RevisionCounts>('/revision/counts'),
+};
+
+// Encargados (admin, JWT-protected)
+export const encargadosApi = {
+  getAll: () => fetchApi<EncargadoResumen[]>('/encargados'),
+  getById: (id: string) => fetchApi<EncargadoDetalle>(`/encargados/${id}`),
+  regenerarToken: (trabajadorId: string) =>
+    fetchApi<Trabajador>(`/trabajadores/${trabajadorId}/regenerar-token`, {
+      method: 'POST',
+    }),
+  getComentarios: (tareaId: string) =>
+    fetchApi<TareaComentario[]>(`/encargados/tareas/${tareaId}/comentarios`),
+  createComentario: (tareaId: string, texto: string) =>
+    fetchApi<TareaComentario>(`/encargados/tareas/${tareaId}/comentarios`, {
+      method: 'POST',
+      body: JSON.stringify({ texto }),
+    }),
+  getUnreadCount: () =>
+    fetchApi<{ total: number }>('/encargados/unread-count'),
+};
+
+// Public Encargado (no JWT, uses token + pin)
+export const publicEncargadoApi = {
+  verify: async (token: string, pin: string): Promise<VerifyResponse> => {
+    const res = await fetch(`${API_URL}/public/encargado/${token}/verify`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ pin }),
+    });
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.message || 'Error de verificación');
+    }
+    return res.json();
+  },
+  updateTareaEstado: async (
+    token: string,
+    pin: string,
+    tareaId: string,
+    estado: string,
+  ): Promise<Tarea> => {
+    const res = await fetch(
+      `${API_URL}/public/encargado/${token}/tareas/${tareaId}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Pin': pin,
+        },
+        body: JSON.stringify({ estado }),
+      },
+    );
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.message || 'Error al actualizar estado');
+    }
+    return res.json();
+  },
+  createComentario: async (
+    token: string,
+    pin: string,
+    tareaId: string,
+    texto: string,
+  ): Promise<TareaComentario> => {
+    const res = await fetch(
+      `${API_URL}/public/encargado/${token}/tareas/${tareaId}/comentarios`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Pin': pin,
+        },
+        body: JSON.stringify({ texto }),
+      },
+    );
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.message || 'Error al crear comentario');
+    }
+    return res.json();
+  },
+  uploadFoto: async (
+    token: string,
+    pin: string,
+    tareaId: string,
+    file: File,
+  ): Promise<Archivo> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(
+      `${API_URL}/public/encargado/${token}/tareas/${tareaId}/fotos`,
+      {
+        method: 'POST',
+        headers: { 'X-Pin': pin },
+        body: formData,
+      },
+    );
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.message || 'Error al subir foto');
+    }
+    return res.json();
+  },
+  getComentarios: async (
+    token: string,
+    pin: string,
+    tareaId: string,
+  ): Promise<TareaComentario[]> => {
+    const res = await fetch(
+      `${API_URL}/public/encargado/${token}/tareas/${tareaId}/comentarios`,
+      {
+        headers: { 'X-Pin': pin },
+      },
+    );
+    if (!res.ok) {
+      const error = await res.json().catch(() => ({}));
+      throw new Error(error.message || 'Error al obtener comentarios');
+    }
+    return res.json();
+  },
 };
 
 // Backup

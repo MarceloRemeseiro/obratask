@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { v4 as uuidv4 } from 'uuid';
 import { Trabajador } from '../database/entities/trabajador.entity';
 import { TrabajadorAusencia } from '../database/entities/trabajador-ausencia.entity';
 import { ObraTrabajador } from '../database/entities/obra-trabajador.entity';
@@ -53,8 +54,32 @@ export class TrabajadoresService {
     updateTrabajadorDto: UpdateTrabajadorDto,
   ): Promise<Trabajador> {
     const trabajador = await this.findOne(id);
+
+    // Handle esEncargado transitions
+    if (updateTrabajadorDto.esEncargado === true && !trabajador.esEncargado) {
+      updateTrabajadorDto['publicToken'] = uuidv4();
+    } else if (updateTrabajadorDto.esEncargado === false && trabajador.esEncargado) {
+      (updateTrabajadorDto as any).publicToken = null;
+      (updateTrabajadorDto as any).pin = null;
+    }
+
     Object.assign(trabajador, updateTrabajadorDto);
     return this.trabajadorRepository.save(trabajador);
+  }
+
+  async regenerarToken(id: string): Promise<Trabajador> {
+    const trabajador = await this.findOne(id);
+    if (!trabajador.esEncargado) {
+      throw new BadRequestException('El trabajador no es encargado');
+    }
+    trabajador.publicToken = uuidv4();
+    return this.trabajadorRepository.save(trabajador);
+  }
+
+  async findByToken(token: string): Promise<Trabajador | null> {
+    return this.trabajadorRepository.findOne({
+      where: { publicToken: token },
+    });
   }
 
   async remove(id: string): Promise<void> {

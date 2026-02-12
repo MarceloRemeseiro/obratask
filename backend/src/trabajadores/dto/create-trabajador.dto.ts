@@ -6,6 +6,7 @@ import {
   IsDateString,
   IsInt,
   IsArray,
+  IsBoolean,
   Min,
   Max,
 } from 'class-validator';
@@ -108,4 +109,16 @@ export class CreateTrabajadorDto {
   @IsDateString()
   @EmptyToUndefined()
   formacionPRLVencimiento?: string;
+
+  // Encargado
+  @ApiPropertyOptional({ example: false })
+  @IsOptional()
+  @IsBoolean()
+  esEncargado?: boolean;
+
+  @ApiPropertyOptional({ example: '1234' })
+  @IsOptional()
+  @IsString()
+  @EmptyToUndefined()
+  pin?: string;
 }

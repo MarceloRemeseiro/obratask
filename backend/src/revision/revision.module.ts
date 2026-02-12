@@ -6,6 +6,7 @@ import { TrabajadorAusencia } from '../database/entities/trabajador-ausencia.ent
 import { Obra } from '../database/entities/obra.entity';
 import { ObraTrabajador } from '../database/entities/obra-trabajador.entity';
 import { Tarea } from '../database/entities/tarea.entity';
+import { TareaComentario } from '../database/entities/tarea-comentario.entity';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { Tarea } from '../database/entities/tarea.entity';
       Obra,
       ObraTrabajador,
       Tarea,
+      TareaComentario,
     ]),
   ],
   controllers: [RevisionController],

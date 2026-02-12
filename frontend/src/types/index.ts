@@ -32,6 +32,11 @@ export enum TipoAusencia {
   OTRO = 'OTRO',
 }
 
+export enum AutorComentario {
+  ADMIN = 'ADMIN',
+  ENCARGADO = 'ENCARGADO',
+}
+
 export enum TipoCarnet {
   AM = 'AM',
   A1 = 'A1',
@@ -70,6 +75,10 @@ export interface Trabajador {
   // Documentación
   reconocimientoMedicoVencimiento?: string;
   formacionPRLVencimiento?: string;
+  // Encargado
+  esEncargado?: boolean;
+  publicToken?: string;
+  pin?: string;
   // Timestamps
   createdAt: string;
   updatedAt: string;
@@ -122,6 +131,18 @@ export interface Tarea {
   updatedAt: string;
   subtareas?: Subtarea[];
   archivos?: Archivo[];
+  comentarios?: TareaComentario[];
+}
+
+export interface TareaComentario {
+  id: string;
+  texto: string;
+  autor: AutorComentario;
+  autorNombre: string;
+  tareaId: string;
+  leidoPorAdmin: boolean;
+  leidoPorEncargado: boolean;
+  createdAt: string;
 }
 
 export interface Subtarea {
@@ -190,6 +211,8 @@ export interface CreateTrabajadorDto {
   carnetConducirVencimiento?: string;
   reconocimientoMedicoVencimiento?: string;
   formacionPRLVencimiento?: string;
+  esEncargado?: boolean;
+  pin?: string;
 }
 
 export interface CreateAusenciaDto {
@@ -295,6 +318,17 @@ export interface ObraVencida {
   diasVencida: number;
 }
 
+export interface ComentarioSinLeer {
+  id: string;
+  texto: string;
+  autorNombre: string;
+  tareaId: string;
+  tareaTitulo: string;
+  obraId: string;
+  obraNombre: string;
+  createdAt: string;
+}
+
 export interface RevisionCounts {
   trabajadoresBaja: number;
   obrasSinPersonal: number;
@@ -302,6 +336,7 @@ export interface RevisionCounts {
   asignacionesPendientes: number;
   tareasVencidas: number;
   obrasVencidas: number;
+  comentariosSinLeer: number;
   total: number;
 }
 
@@ -313,4 +348,56 @@ export interface RevisionResponse {
   asignacionesPendientes: AsignacionPendiente[];
   tareasVencidas: TareaVencida[];
   obrasVencidas: ObraVencida[];
+  comentariosSinLeer: ComentarioSinLeer[];
+}
+
+// Encargados types
+export interface EncargadoResumen {
+  id: string;
+  nombre: string;
+  cargo?: string;
+  telefono?: string;
+  publicToken: string | null;
+  pin: string | null;
+  tareas: {
+    pendientes: number;
+    enProgreso: number;
+    completadas: number;
+    total: number;
+  };
+}
+
+export interface EncargadoDetalle {
+  id: string;
+  nombre: string;
+  cargo?: string;
+  telefono?: string;
+  publicToken: string | null;
+  pin: string | null;
+  tareasPorObra: {
+    obra: { id: string; nombre: string };
+    tareas: Tarea[];
+  }[];
+}
+
+export interface VerifyResponse {
+  encargado: {
+    id: string;
+    nombre: string;
+    cargo?: string;
+  };
+  misTareas: (Tarea & { unreadCount?: number })[];
+  tareasEquipo: (Tarea & { unreadCount?: number })[];
+}
+
+export interface CreateComentarioDto {
+  texto: string;
+}
+
+export interface VerifyPinDto {
+  pin: string;
+}
+
+export interface UpdateTareaEstadoDto {
+  estado: EstadoTarea;
 }

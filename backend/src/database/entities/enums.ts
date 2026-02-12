@@ -48,3 +48,8 @@ export enum TipoCarnet {
   D1E = 'D1E',
   DE = 'DE',
 }
+
+export enum AutorComentario {
+  ADMIN = 'ADMIN',
+  ENCARGADO = 'ENCARGADO',
+}

@@ -117,6 +117,32 @@ export class ObraVencidaDto {
   diasVencida: number;
 }
 
+export class ComentarioSinLeerDto {
+  @ApiProperty()
+  id: string;
+
+  @ApiProperty()
+  texto: string;
+
+  @ApiProperty()
+  autorNombre: string;
+
+  @ApiProperty()
+  tareaId: string;
+
+  @ApiProperty()
+  tareaTitulo: string;
+
+  @ApiProperty()
+  obraId: string;
+
+  @ApiProperty()
+  obraNombre: string;
+
+  @ApiProperty()
+  createdAt: Date;
+}
+
 export class RevisionCountsDto {
   @ApiProperty()
   trabajadoresBaja: number;
@@ -135,6 +161,9 @@ export class RevisionCountsDto {
 
   @ApiProperty()
   obrasVencidas: number;
+
+  @ApiProperty()
+  comentariosSinLeer: number;
 
   @ApiProperty()
   total: number;
@@ -161,4 +190,7 @@ export class RevisionResponseDto {
 
   @ApiProperty({ type: [ObraVencidaDto] })
   obrasVencidas: ObraVencidaDto[];
+
+  @ApiProperty({ type: [ComentarioSinLeerDto] })
+  comentariosSinLeer: ComentarioSinLeerDto[];
 }

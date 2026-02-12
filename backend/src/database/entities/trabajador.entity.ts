@@ -63,6 +63,16 @@ export class Trabajador {
   @Column({ type: 'date', nullable: true })
   formacionPRLVencimiento: Date;
 
+  // Encargado
+  @Column({ default: false })
+  esEncargado: boolean;
+
+  @Column({ type: 'uuid', nullable: true, unique: true })
+  publicToken: string | null;
+
+  @Column({ type: 'varchar', length: 4, nullable: true })
+  pin: string | null;
+
   @CreateDateColumn()
   createdAt: Date;
 

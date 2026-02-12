@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -56,6 +56,67 @@ const columnas: { id: EstadoTarea; titulo: string }[] = [
   { id: EstadoTarea.COMPLETADO, titulo: 'Completado' },
 ];
 
+function KanbanColumn({
+  titulo,
+  tareas,
+  estado,
+  onEdit,
+  onDelete,
+  onEstadoChange,
+}: {
+  titulo: string;
+  tareas: Tarea[];
+  estado: EstadoTarea;
+  onEdit: (tarea: Tarea) => void;
+  onDelete: (tareaId: string) => void;
+  onEstadoChange: (tareaId: string, estado: EstadoTarea) => void;
+}) {
+  return (
+    <div className="flex flex-col h-full min-h-[300px]">
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-medium text-sm">{titulo}</h3>
+        <span className="text-xs text-muted-foreground">
+          {tareas.length}
+        </span>
+      </div>
+      <ScrollArea className="flex-1">
+        <div className="space-y-2 pr-2">
+          {tareas.map((tarea) => (
+            <div
+              key={tarea.id}
+              draggable
+              onDragStart={(e) => {
+                e.dataTransfer.setData('tareaId', tarea.id);
+                e.dataTransfer.setData('fromEstado', tarea.estado);
+              }}
+            >
+              <TareaCard
+                tarea={tarea}
+                onEdit={() => onEdit(tarea)}
+                onDelete={() => onDelete(tarea.id)}
+              />
+            </div>
+          ))}
+        </div>
+      </ScrollArea>
+      <div
+        className="min-h-[60px] border-2 border-dashed border-muted rounded-lg mt-2 flex items-center justify-center text-xs text-muted-foreground"
+        onDragOver={(e) => e.preventDefault()}
+        onDrop={(e) => {
+          e.preventDefault();
+          const tareaId = e.dataTransfer.getData('tareaId');
+          const fromEstado = e.dataTransfer.getData('fromEstado');
+          if (fromEstado !== estado) {
+            onEstadoChange(tareaId, estado);
+          }
+        }}
+      >
+        Arrastrar aqui
+      </div>
+    </div>
+  );
+}
+
 export function KanbanBoard({ obraId, tareas, trabajadoresAsignados, onUpdate }: KanbanBoardProps) {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTarea, setEditingTarea] = useState<Tarea | null>(null);
@@ -68,8 +129,27 @@ export function KanbanBoard({ obraId, tareas, trabajadoresAsignados, onUpdate }:
     trabajadorId: '',
   });
 
-  const tareasPorEstado = (estado: EstadoTarea) =>
-    tareas.filter((t) => t.estado === estado).sort((a, b) => a.orden - b.orden);
+  const tareasAgrupadas = useMemo(() => {
+    const grouped: Record<EstadoTarea, Tarea[]> = {
+      [EstadoTarea.PENDIENTE]: [],
+      [EstadoTarea.EN_PROGRESO]: [],
+      [EstadoTarea.COMPLETADO]: [],
+    };
+    for (const t of tareas) {
+      grouped[t.estado]?.push(t);
+    }
+    for (const arr of Object.values(grouped)) {
+      arr.sort((a, b) => a.orden - b.orden);
+    }
+    return grouped;
+  }, [tareas]);
+
+  const tareasOrdenMobile = useMemo(() => {
+    const ordenEstado = { [EstadoTarea.EN_PROGRESO]: 0, [EstadoTarea.PENDIENTE]: 1, [EstadoTarea.COMPLETADO]: 2 };
+    return [...tareas].sort(
+      (a, b) => ordenEstado[a.estado] - ordenEstado[b.estado] || a.orden - b.orden
+    );
+  }, [tareas]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,57 +220,6 @@ export function KanbanBoard({ obraId, tareas, trabajadoresAsignados, onUpdate }:
     });
   };
 
-  const KanbanColumn = ({
-    estado,
-    titulo,
-  }: {
-    estado: EstadoTarea;
-    titulo: string;
-  }) => (
-    <div className="flex flex-col h-full min-h-[300px]">
-      <div className="flex items-center justify-between mb-3">
-        <h3 className="font-medium text-sm">{titulo}</h3>
-        <span className="text-xs text-muted-foreground">
-          {tareasPorEstado(estado).length}
-        </span>
-      </div>
-      <ScrollArea className="flex-1">
-        <div className="space-y-2 pr-2">
-          {tareasPorEstado(estado).map((tarea) => (
-            <div
-              key={tarea.id}
-              draggable
-              onDragStart={(e) => {
-                e.dataTransfer.setData('tareaId', tarea.id);
-                e.dataTransfer.setData('fromEstado', tarea.estado);
-              }}
-            >
-              <TareaCard
-                tarea={tarea}
-                onEdit={() => handleEdit(tarea)}
-                onDelete={() => handleDelete(tarea.id)}
-              />
-            </div>
-          ))}
-        </div>
-      </ScrollArea>
-      <div
-        className="min-h-[60px] border-2 border-dashed border-muted rounded-lg mt-2 flex items-center justify-center text-xs text-muted-foreground"
-        onDragOver={(e) => e.preventDefault()}
-        onDrop={(e) => {
-          e.preventDefault();
-          const tareaId = e.dataTransfer.getData('tareaId');
-          const fromEstado = e.dataTransfer.getData('fromEstado');
-          if (fromEstado !== estado) {
-            handleEstadoChange(tareaId, estado);
-          }
-        }}
-      >
-        Arrastrar aqui
-      </div>
-    </div>
-  );
-
   return (
     <div>
       <div className="flex items-center justify-between mb-4">
@@ -214,12 +243,7 @@ export function KanbanBoard({ obraId, tareas, trabajadoresAsignados, onUpdate }:
             No hay tareas. Crea una nueva.
           </p>
         ) : (
-          tareas
-            .sort((a, b) => {
-              const orden = { [EstadoTarea.EN_PROGRESO]: 0, [EstadoTarea.PENDIENTE]: 1, [EstadoTarea.COMPLETADO]: 2 };
-              return orden[a.estado] - orden[b.estado] || a.orden - b.orden;
-            })
-            .map((tarea) => (
+          tareasOrdenMobile.map((tarea) => (
               <div
                 key={tarea.id}
                 className="flex items-center gap-2 p-2 bg-card border rounded-lg"
@@ -332,23 +356,33 @@ export function KanbanBoard({ obraId, tareas, trabajadoresAsignados, onUpdate }:
 
       {/* Desktop: 3 columns */}
       <div className="hidden md:grid md:grid-cols-3 gap-4">
-        {columnas.map((col) => (
-          <div
-            key={col.id}
-            className="bg-muted/30 rounded-lg p-3"
-            onDragOver={(e) => e.preventDefault()}
-            onDrop={(e) => {
-              e.preventDefault();
-              const tareaId = e.dataTransfer.getData('tareaId');
-              const fromEstado = e.dataTransfer.getData('fromEstado');
-              if (fromEstado !== col.id) {
-                handleEstadoChange(tareaId, col.id);
-              }
-            }}
-          >
-            <KanbanColumn estado={col.id} titulo={col.titulo} />
-          </div>
-        ))}
+        {columnas.map((col) => {
+          const columnTareas = tareasAgrupadas[col.id];
+          return (
+            <div
+              key={col.id}
+              className="bg-muted/30 rounded-lg p-3"
+              onDragOver={(e) => e.preventDefault()}
+              onDrop={(e) => {
+                e.preventDefault();
+                const tareaId = e.dataTransfer.getData('tareaId');
+                const fromEstado = e.dataTransfer.getData('fromEstado');
+                if (fromEstado !== col.id) {
+                  handleEstadoChange(tareaId, col.id);
+                }
+              }}
+            >
+              <KanbanColumn
+                titulo={col.titulo}
+                tareas={columnTareas}
+                estado={col.id}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onEstadoChange={handleEstadoChange}
+              />
+            </div>
+          );
+        })}
       </div>
 
       {/* Dialog for create/edit */}

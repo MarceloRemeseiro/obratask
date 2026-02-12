@@ -12,6 +12,7 @@ import { Trabajador } from './database/entities/trabajador.entity';
 import { TrabajadorAusencia } from './database/entities/trabajador-ausencia.entity';
 import { ObraTrabajador } from './database/entities/obra-trabajador.entity';
 import { Archivo } from './database/entities/archivo.entity';
+import { TareaComentario } from './database/entities/tarea-comentario.entity';
 
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/jwt-auth.guard';
@@ -22,6 +23,8 @@ import { SubtareasModule } from './subtareas/subtareas.module';
 import { ArchivosModule } from './archivos/archivos.module';
 import { RevisionModule } from './revision/revision.module';
 import { BackupModule } from './backup/backup.module';
+import { EncargadosModule } from './encargados/encargados.module';
+import { PublicEncargadoModule } from './public-encargado/public-encargado.module';
 
 @Module({
   imports: [
@@ -37,7 +40,7 @@ import { BackupModule } from './backup/backup.module';
         username: configService.get('DATABASE_USER'),
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get('DATABASE_NAME'),
-        entities: [Obra, Tarea, Subtarea, Trabajador, TrabajadorAusencia, ObraTrabajador, Archivo],
+        entities: [Obra, Tarea, Subtarea, Trabajador, TrabajadorAusencia, ObraTrabajador, Archivo, TareaComentario],
         synchronize: true, // Solo para desarrollo
       }),
       inject: [ConfigService],
@@ -50,6 +53,8 @@ import { BackupModule } from './backup/backup.module';
     ArchivosModule,
     RevisionModule,
     BackupModule,
+    EncargadosModule,
+    PublicEncargadoModule,
   ],
   controllers: [AppController],
   providers: [

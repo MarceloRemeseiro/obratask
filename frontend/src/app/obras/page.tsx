@@ -1,11 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ObraCard } from '@/components/obras/ObraCard';
 import { ObraForm } from '@/components/obras/ObraForm';
 import { obrasApi } from '@/lib/api';
 import { Obra, EstadoObra } from '@/types';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Building2 } from 'lucide-react';
 
 export default function ObrasPage() {
   const [obras, setObras] = useState<Obra[]>([]);
@@ -32,8 +35,28 @@ export default function ObrasPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">Cargando...</p>
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-8 w-32" />
+            <Skeleton className="h-4 w-56 mt-2" />
+          </div>
+          <Skeleton className="h-9 w-28" />
+        </div>
+        <Skeleton className="h-10 w-full max-w-md" />
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="p-4 pb-2">
+                <Skeleton className="h-5 w-3/4" />
+              </CardHeader>
+              <CardContent className="p-4 pt-0">
+                <Skeleton className="h-4 w-full mt-2" />
+                <Skeleton className="h-3 w-1/2 mt-2" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
@@ -82,8 +105,14 @@ export default function ObrasPage() {
       </Tabs>
 
       {obrasFiltradas.length === 0 ? (
-        <div className="text-center py-12 text-muted-foreground">
-          No hay obras {filtro !== 'todas' && 'con este estado'}
+        <div className="text-center py-16">
+          <Building2 className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
+          <p className="text-muted-foreground font-medium">
+            {filtro !== 'todas' ? 'No hay obras con este estado' : 'No hay obras'}
+          </p>
+          <p className="text-sm text-muted-foreground/70 mt-1">
+            {filtro === 'todas' ? 'Crea tu primera obra para empezar' : 'Prueba con otro filtro'}
+          </p>
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">

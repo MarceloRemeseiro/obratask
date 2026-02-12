@@ -14,12 +14,12 @@ interface ObraCardProps {
 
 const estadoConfig: Record<
   EstadoObra,
-  { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline' }
+  { label: string; variant: 'default' | 'secondary' | 'destructive' | 'outline'; borderColor: string }
 > = {
-  [EstadoObra.SIN_INICIAR]: { label: 'Sin iniciar', variant: 'secondary' },
-  [EstadoObra.EN_PROGRESO]: { label: 'En progreso', variant: 'default' },
-  [EstadoObra.LISTA_PARA_CERRAR]: { label: 'Lista para cerrar', variant: 'outline' },
-  [EstadoObra.COMPLETADA]: { label: 'Completada', variant: 'secondary' },
+  [EstadoObra.SIN_INICIAR]: { label: 'Sin iniciar', variant: 'secondary', borderColor: 'border-l-gray-400' },
+  [EstadoObra.EN_PROGRESO]: { label: 'En progreso', variant: 'default', borderColor: 'border-l-blue-500' },
+  [EstadoObra.LISTA_PARA_CERRAR]: { label: 'Lista para cerrar', variant: 'outline', borderColor: 'border-l-amber-500' },
+  [EstadoObra.COMPLETADA]: { label: 'Completada', variant: 'secondary', borderColor: 'border-l-green-500' },
 };
 
 export function ObraCard({ obra }: ObraCardProps) {
@@ -29,7 +29,7 @@ export function ObraCard({ obra }: ObraCardProps) {
 
   return (
     <Link href={`/obras/${obra.id}`}>
-      <Card className="hover:shadow-md transition-shadow cursor-pointer">
+      <Card className={`hover:shadow-md transition-shadow cursor-pointer border-l-4 ${config.borderColor}`}>
         <CardHeader className="p-3 md:p-4 pb-1 md:pb-2">
           <div className="flex items-start justify-between gap-2">
             <CardTitle className="text-base md:text-lg line-clamp-1">{obra.nombre}</CardTitle>

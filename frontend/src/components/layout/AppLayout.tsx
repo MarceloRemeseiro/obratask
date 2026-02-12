@@ -7,9 +7,9 @@ import { Header } from './Header';
 
 export function AppLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const isLoginPage = pathname === '/login';
+  const isPublicPage = pathname === '/login' || pathname.startsWith('/encargado/');
 
-  if (isLoginPage) {
+  if (isPublicPage) {
     return <div className="min-h-screen bg-background">{children}</div>;
   }
 

@@ -11,7 +11,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const publicPaths = ['/login'];
-    const isPublicPath = publicPaths.includes(pathname);
+    const isPublicPath = publicPaths.includes(pathname) || pathname.startsWith('/encargado/');
 
     if (!isPublicPath && !isAuthenticated()) {
       router.push('/login');
@@ -22,7 +22,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [pathname, router]);
 
-  if (isChecking && pathname !== '/login') {
+  if (isChecking && pathname !== '/login' && !pathname.startsWith('/encargado/')) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="animate-pulse">Cargando...</div>

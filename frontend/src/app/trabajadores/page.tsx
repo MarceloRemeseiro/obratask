@@ -47,6 +47,7 @@ import {
   Edit,
   Trash2,
   MoreVertical,
+  HardHat,
   Palmtree,
   Stethoscope,
   AlertTriangle,
@@ -55,10 +56,12 @@ import {
   ShieldCheck,
   HeartPulse,
   X,
+  Users,
 } from 'lucide-react';
 import { format, parseISO, isWithinInterval, startOfDay, differenceInDays, isBefore, startOfYear, endOfYear } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 
 const tipoContratoLabels: Record<TipoContrato, string> = {
@@ -346,8 +349,29 @@ export default function TrabajadoresPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">Cargando...</p>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <Skeleton className="h-7 w-24" />
+            <Skeleton className="h-4 w-32 mt-1" />
+          </div>
+          <Skeleton className="h-9 w-24" />
+        </div>
+        <div className="space-y-2 md:grid md:grid-cols-2 lg:grid-cols-3 md:gap-4 md:space-y-0">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="w-10 h-10 rounded-full" />
+                  <div className="flex-1">
+                    <Skeleton className="h-4 w-32" />
+                    <Skeleton className="h-3 w-24 mt-1" />
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     );
   }
@@ -652,8 +676,14 @@ export default function TrabajadoresPage() {
 
       {trabajadores.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center text-muted-foreground">
-            No hay trabajadores registrados
+          <CardContent className="py-16 text-center">
+            <Users className="h-12 w-12 mx-auto text-muted-foreground/40 mb-3" />
+            <p className="text-muted-foreground font-medium">No hay trabajadores registrados</p>
+            <p className="text-sm text-muted-foreground/70 mt-1">Agrega tu primer trabajador al equipo</p>
+            <Button size="sm" className="mt-4" onClick={() => setDialogOpen(true)}>
+              <Plus className="h-4 w-4 mr-1" />
+              Nuevo trabajador
+            </Button>
           </CardContent>
         </Card>
       ) : (
@@ -701,6 +731,9 @@ export default function TrabajadoresPage() {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2">
                         <span className="font-medium text-sm truncate">{trabajador.nombre}</span>
+                        {trabajador.esEncargado && (
+                          <HardHat className="h-3 w-3 text-primary shrink-0" />
+                        )}
                         {alertas.length > 0 && (
                           <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0" />
                         )}
@@ -824,6 +857,12 @@ export default function TrabajadoresPage() {
                     <div className="flex items-start justify-between">
                       <div className="flex items-center gap-2">
                         <CardTitle className="text-base">{trabajador.nombre}</CardTitle>
+                        {trabajador.esEncargado && (
+                          <Badge variant="secondary" className="text-xs gap-1">
+                            <HardHat className="h-3 w-3" />
+                            Encargado
+                          </Badge>
+                        )}
                         {estado.tipo === 'ausente' && AusenciaIcon && (
                           <Badge variant={
                             estado.ausencia?.tipo === TipoAusencia.VACACIONES ? 'default' :

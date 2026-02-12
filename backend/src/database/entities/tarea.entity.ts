@@ -11,6 +11,7 @@ import {
 import { Obra } from './obra.entity';
 import { Subtarea } from './subtarea.entity';
 import { Archivo } from './archivo.entity';
+import { TareaComentario } from './tarea-comentario.entity';
 import { Trabajador } from './trabajador.entity';
 import { EstadoTarea, PrioridadTarea } from './enums';
 
@@ -66,6 +67,9 @@ export class Tarea {
 
   @OneToMany(() => Archivo, (archivo) => archivo.tarea)
   archivos: Archivo[];
+
+  @OneToMany(() => TareaComentario, (comentario) => comentario.tarea)
+  comentarios: TareaComentario[];
 
   @CreateDateColumn()
   createdAt: Date;

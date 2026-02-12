@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { obrasApi, trabajadoresApi } from '@/lib/api';
 import { Obra, Trabajador, ObraTrabajador, EstadoObra, TrabajadorAusencia, TipoAusencia } from '@/types';
 import { ChevronLeft, ChevronRight, Building2, User, Palmtree, Stethoscope, HeartPulse, Calendar, AlertCircle } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   format,
   startOfMonth,
@@ -161,8 +162,16 @@ export default function CalendarioPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">Cargando...</p>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-8 w-40" />
+          <Skeleton className="h-9 w-32" />
+        </div>
+        <div className="grid grid-cols-7 gap-1">
+          {Array.from({ length: 35 }).map((_, i) => (
+            <Skeleton key={i} className="h-20 w-full" />
+          ))}
+        </div>
       </div>
     );
   }

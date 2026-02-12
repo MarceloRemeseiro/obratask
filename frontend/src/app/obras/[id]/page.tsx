@@ -15,6 +15,7 @@ import { ArchivosTab } from '@/components/archivos/ArchivosTab';
 import { FotosTab } from '@/components/archivos/FotosTab';
 import { obrasApi } from '@/lib/api';
 import { Obra, EstadoObra, ObraTrabajador } from '@/types';
+import { Skeleton } from '@/components/ui/skeleton';
 import {
   ArrowLeft,
   Calendar,
@@ -105,8 +106,27 @@ export default function ObraDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-muted-foreground">Cargando...</p>
+      <div className="space-y-6">
+        <div className="flex items-center gap-3">
+          <Skeleton className="h-9 w-9" />
+          <Skeleton className="h-8 w-48" />
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-4">
+                <Skeleton className="h-4 w-20 mb-2" />
+                <Skeleton className="h-6 w-16" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <Skeleton className="h-10 w-full max-w-sm" />
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 w-full" />
+          ))}
+        </div>
       </div>
     );
   }

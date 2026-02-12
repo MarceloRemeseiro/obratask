@@ -18,7 +18,7 @@ import {
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { revisionApi, authApi } from '@/lib/api';
+import { revisionApi, encargadosApi, authApi } from '@/lib/api';
 
 const navItems = [
   { href: '/', label: 'Dashboard', icon: Home },
@@ -27,6 +27,7 @@ const navItems = [
   { href: '/planificacion', label: 'Planificacion', icon: ClipboardList },
   { href: '/calendario', label: 'Calendario', icon: Calendar },
   { href: '/trabajadores', label: 'Trabajadores', icon: Users },
+  { href: '/encargados', label: 'Encargados', icon: HardHat, showEncargadoBadge: true },
   { href: '/ajustes', label: 'Ajustes', icon: Settings },
 ];
 
@@ -34,19 +35,23 @@ export function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [revisionCount, setRevisionCount] = useState(0);
+  const [encargadoUnread, setEncargadoUnread] = useState(0);
 
   useEffect(() => {
-    const fetchCount = async () => {
+    const fetchCounts = async () => {
       try {
-        const counts = await revisionApi.getCounts();
+        const [counts, unread] = await Promise.all([
+          revisionApi.getCounts(),
+          encargadosApi.getUnreadCount(),
+        ]);
         setRevisionCount(counts.total);
+        setEncargadoUnread(unread.total);
       } catch (error) {
-        console.error('Error fetching revision count:', error);
+        console.error('Error fetching counts:', error);
       }
     };
-    fetchCount();
-    // Refresh every 60 seconds
-    const interval = setInterval(fetchCount, 60000);
+    fetchCounts();
+    const interval = setInterval(fetchCounts, 60000);
     return () => clearInterval(interval);
   }, []);
 
@@ -72,6 +77,7 @@ export function Sidebar() {
                 ? pathname === '/'
                 : pathname.startsWith(item.href);
             const showBadge = (item as any).showBadge && revisionCount > 0;
+            const showEncargadoBadge = (item as any).showEncargadoBadge && encargadoUnread > 0;
 
             return (
               <li key={item.href}>
@@ -92,6 +98,14 @@ export function Sidebar() {
                       className="ml-auto h-5 px-1.5 text-xs"
                     >
                       {revisionCount}
+                    </Badge>
+                  )}
+                  {showEncargadoBadge && (
+                    <Badge
+                      variant="destructive"
+                      className="ml-auto h-5 px-1.5 text-xs"
+                    >
+                      {encargadoUnread}
                     </Badge>
                   )}
                 </Link>

@@ -13,6 +13,7 @@ import { Archivo, TipoArchivo } from '@/types';
 import { Camera, Upload, Trash2, Download, X, Image as ImageIcon } from 'lucide-react';
 import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
+import Image from 'next/image';
 
 interface FotosTabProps {
   obraId: string;
@@ -186,10 +187,13 @@ export function FotosTab({ obraId }: FotosTabProps) {
                 className="relative aspect-square rounded-lg overflow-hidden cursor-pointer group bg-muted"
                 onClick={() => setSelectedFoto(foto)}
               >
-                <img
+                <Image
                   src={foto.url}
                   alt={foto.nombreOriginal}
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="(max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+                  className="object-cover"
+                  unoptimized
                 />
                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <span className="text-white text-xs">Ver</span>
@@ -214,11 +218,17 @@ export function FotosTab({ obraId }: FotosTabProps) {
           </DialogTitle>
           {selectedFoto && (
             <div className="relative">
-              <img
-                src={selectedFoto.url}
-                alt={selectedFoto.nombreOriginal}
-                className="w-full max-h-[80vh] object-contain bg-black"
-              />
+              <div className="relative w-full" style={{ height: '80vh' }}>
+                <Image
+                  src={selectedFoto.url}
+                  alt={selectedFoto.nombreOriginal}
+                  fill
+                  sizes="100vw"
+                  className="object-contain bg-black"
+                  unoptimized
+                  priority
+                />
+              </div>
               <div className="absolute top-2 right-2 flex gap-2">
                 <Button
                   size="icon"

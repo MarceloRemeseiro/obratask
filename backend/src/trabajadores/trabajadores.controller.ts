@@ -79,6 +79,13 @@ export class TrabajadoresController {
     return this.trabajadoresService.removeAusencia(id, ausenciaId);
   }
 
+  @Post(':id/regenerar-token')
+  @ApiOperation({ summary: 'Regenerar token público de encargado' })
+  @ApiResponse({ status: 200, description: 'Token regenerado' })
+  regenerarToken(@Param('id', ParseUUIDPipe) id: string) {
+    return this.trabajadoresService.regenerarToken(id);
+  }
+
   @Get(':id')
   @ApiOperation({ summary: 'Obtener un trabajador por ID' })
   @ApiResponse({ status: 200, description: 'Trabajador encontrado' })

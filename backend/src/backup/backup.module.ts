@@ -9,6 +9,7 @@ import { Trabajador } from '../database/entities/trabajador.entity';
 import { TrabajadorAusencia } from '../database/entities/trabajador-ausencia.entity';
 import { ObraTrabajador } from '../database/entities/obra-trabajador.entity';
 import { Archivo } from '../database/entities/archivo.entity';
+import { TareaComentario } from '../database/entities/tarea-comentario.entity';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { Archivo } from '../database/entities/archivo.entity';
       TrabajadorAusencia,
       ObraTrabajador,
       Archivo,
+      TareaComentario,
     ]),
   ],
   controllers: [BackupController],

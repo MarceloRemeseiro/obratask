@@ -11,8 +11,9 @@ import {
   Home,
   AlertCircle,
   ClipboardList,
+  HardHat,
 } from 'lucide-react';
-import { revisionApi } from '@/lib/api';
+import { revisionApi, encargadosApi } from '@/lib/api';
 
 const navItems = [
   { href: '/', label: 'Inicio', icon: Home },
@@ -21,23 +22,29 @@ const navItems = [
   { href: '/planificacion', label: 'Planif.', icon: ClipboardList },
   { href: '/calendario', label: 'Calendario', icon: Calendar },
   { href: '/trabajadores', label: 'Equipo', icon: Users },
+  { href: '/encargados', label: 'Encarg.', icon: HardHat, showEncargadoBadge: true },
 ];
 
 export function BottomNav() {
   const pathname = usePathname();
   const [revisionCount, setRevisionCount] = useState(0);
+  const [encargadoUnread, setEncargadoUnread] = useState(0);
 
   useEffect(() => {
-    const fetchCount = async () => {
+    const fetchCounts = async () => {
       try {
-        const counts = await revisionApi.getCounts();
+        const [counts, unread] = await Promise.all([
+          revisionApi.getCounts(),
+          encargadosApi.getUnreadCount(),
+        ]);
         setRevisionCount(counts.total);
+        setEncargadoUnread(unread.total);
       } catch (error) {
-        console.error('Error fetching revision count:', error);
+        console.error('Error fetching counts:', error);
       }
     };
-    fetchCount();
-    const interval = setInterval(fetchCount, 60000);
+    fetchCounts();
+    const interval = setInterval(fetchCounts, 60000);
     return () => clearInterval(interval);
   }, []);
 
@@ -51,6 +58,7 @@ export function BottomNav() {
               ? pathname === '/'
               : pathname.startsWith(item.href);
           const showBadge = (item as any).showBadge && revisionCount > 0;
+          const showEncargadoBadge = (item as any).showEncargadoBadge && encargadoUnread > 0;
 
           return (
             <Link
@@ -70,8 +78,16 @@ export function BottomNav() {
                     {revisionCount > 99 ? '99+' : revisionCount}
                   </span>
                 )}
+                {showEncargadoBadge && (
+                  <span className="absolute -top-1 -right-1 h-4 min-w-4 px-1 flex items-center justify-center bg-destructive text-destructive-foreground text-[9px] font-medium rounded-full">
+                    {encargadoUnread > 99 ? '99+' : encargadoUnread}
+                  </span>
+                )}
               </div>
               <span className="truncate">{item.label}</span>
+              {isActive && (
+                <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-5 h-0.5 rounded-full bg-primary" />
+              )}
             </Link>
           );
         })}

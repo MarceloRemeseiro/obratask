@@ -5,7 +5,8 @@ import { TrabajadorAusencia } from '../database/entities/trabajador-ausencia.ent
 import { Obra } from '../database/entities/obra.entity';
 import { ObraTrabajador } from '../database/entities/obra-trabajador.entity';
 import { Tarea } from '../database/entities/tarea.entity';
-import { EstadoObra, EstadoTarea } from '../database/entities/enums';
+import { TareaComentario } from '../database/entities/tarea-comentario.entity';
+import { EstadoObra, EstadoTarea, AutorComentario } from '../database/entities/enums';
 import {
   RevisionResponseDto,
   RevisionCountsDto,
@@ -15,6 +16,7 @@ import {
   AsignacionPendienteDto,
   TareaVencidaDto,
   ObraVencidaDto,
+  ComentarioSinLeerDto,
 } from './dto/revision-response.dto';
 
 @Injectable()
@@ -28,6 +30,8 @@ export class RevisionService {
     private obraTrabajadorRepository: Repository<ObraTrabajador>,
     @InjectRepository(Tarea)
     private tareaRepository: Repository<Tarea>,
+    @InjectRepository(TareaComentario)
+    private comentarioRepository: Repository<TareaComentario>,
   ) {}
 
   async getRevision(): Promise<RevisionResponseDto> {
@@ -41,6 +45,7 @@ export class RevisionService {
       asignacionesPendientes,
       tareasVencidas,
       obrasVencidas,
+      comentariosSinLeer,
     ] = await Promise.all([
       this.getTrabajadoresBaja(today),
       this.getObrasSinPersonal(),
@@ -48,6 +53,7 @@ export class RevisionService {
       this.getAsignacionesPendientes(),
       this.getTareasVencidas(today),
       this.getObrasVencidas(today),
+      this.getComentariosSinLeer(),
     ]);
 
     const counts: RevisionCountsDto = {
@@ -57,13 +63,15 @@ export class RevisionService {
       asignacionesPendientes: asignacionesPendientes.length,
       tareasVencidas: tareasVencidas.length,
       obrasVencidas: obrasVencidas.length,
+      comentariosSinLeer: comentariosSinLeer.length,
       total:
         trabajadoresBaja.length +
         obrasSinPersonal.length +
         obrasListasCerrar.length +
         asignacionesPendientes.length +
         tareasVencidas.length +
-        obrasVencidas.length,
+        obrasVencidas.length +
+        comentariosSinLeer.length,
     };
 
     return {
@@ -74,6 +82,7 @@ export class RevisionService {
       asignacionesPendientes,
       tareasVencidas,
       obrasVencidas,
+      comentariosSinLeer,
     };
   }
 
@@ -88,6 +97,7 @@ export class RevisionService {
       asignacionesPendientes,
       tareasVencidas,
       obrasVencidas,
+      comentariosSinLeer,
     ] = await Promise.all([
       this.countTrabajadoresBaja(today),
       this.countObrasSinPersonal(),
@@ -95,6 +105,7 @@ export class RevisionService {
       this.countAsignacionesPendientes(),
       this.countTareasVencidas(today),
       this.countObrasVencidas(today),
+      this.countComentariosSinLeer(),
     ]);
 
     return {
@@ -104,13 +115,15 @@ export class RevisionService {
       asignacionesPendientes,
       tareasVencidas,
       obrasVencidas,
+      comentariosSinLeer,
       total:
         trabajadoresBaja +
         obrasSinPersonal +
         obrasListasCerrar +
         asignacionesPendientes +
         tareasVencidas +
-        obrasVencidas,
+        obrasVencidas +
+        comentariosSinLeer,
     };
   }
 
@@ -290,5 +303,33 @@ export class RevisionService {
       .where('obra.fechaFinPrev < :today', { today })
       .andWhere('obra.estado != :completada', { completada: EstadoObra.COMPLETADA })
       .getCount();
+  }
+
+  private async getComentariosSinLeer(): Promise<ComentarioSinLeerDto[]> {
+    const comentarios = await this.comentarioRepository
+      .createQueryBuilder('comentario')
+      .leftJoinAndSelect('comentario.tarea', 'tarea')
+      .leftJoinAndSelect('tarea.obra', 'obra')
+      .where('comentario.autor = :autor', { autor: AutorComentario.ENCARGADO })
+      .andWhere('comentario.leidoPorAdmin = false')
+      .orderBy('comentario.createdAt', 'DESC')
+      .getMany();
+
+    return comentarios.map((c) => ({
+      id: c.id,
+      texto: c.texto,
+      autorNombre: c.autorNombre,
+      tareaId: c.tareaId,
+      tareaTitulo: c.tarea?.titulo || '',
+      obraId: c.tarea?.obraId || '',
+      obraNombre: c.tarea?.obra?.nombre || '',
+      createdAt: c.createdAt,
+    }));
+  }
+
+  private async countComentariosSinLeer(): Promise<number> {
+    return this.comentarioRepository.count({
+      where: { autor: AutorComentario.ENCARGADO, leidoPorAdmin: false },
+    });
   }
 }

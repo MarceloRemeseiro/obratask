@@ -20,6 +20,7 @@ import { Trabajador } from '../database/entities/trabajador.entity';
 import { TrabajadorAusencia } from '../database/entities/trabajador-ausencia.entity';
 import { ObraTrabajador } from '../database/entities/obra-trabajador.entity';
 import { Archivo, TipoArchivo } from '../database/entities/archivo.entity';
+import { TareaComentario } from '../database/entities/tarea-comentario.entity';
 
 @Injectable()
 export class BackupService {
@@ -43,6 +44,8 @@ export class BackupService {
     private obraTrabajadorRepo: Repository<ObraTrabajador>,
     @InjectRepository(Archivo)
     private archivoRepo: Repository<Archivo>,
+    @InjectRepository(TareaComentario)
+    private tareaComentarioRepo: Repository<TareaComentario>,
     private configService: ConfigService,
     private dataSource: DataSource,
   ) {
@@ -78,6 +81,7 @@ export class BackupService {
       subtareas,
       obrasTrabajadores,
       archivos,
+      tareaComentarios,
     ] = await Promise.all([
       this.trabajadorRepo.find(),
       this.ausenciaRepo.find(),
@@ -86,6 +90,7 @@ export class BackupService {
       this.subtareaRepo.find(),
       this.obraTrabajadorRepo.find(),
       this.archivoRepo.find(),
+      this.tareaComentarioRepo.find(),
     ]);
 
     return {
@@ -99,6 +104,7 @@ export class BackupService {
         subtareas,
         obrasTrabajadores,
         archivos,
+        tareaComentarios,
       },
     };
   }
@@ -116,6 +122,7 @@ export class BackupService {
 
     try {
       // Delete children first
+      await queryRunner.query('DELETE FROM tarea_comentarios');
       await queryRunner.query('DELETE FROM subtareas');
       await queryRunner.query('DELETE FROM archivos');
       await queryRunner.query('DELETE FROM obras_trabajadores');
@@ -149,6 +156,13 @@ export class BackupService {
       if (entities.subtareas?.length) {
         await queryRunner.manager.save(Subtarea, entities.subtareas);
         counts.subtareas = entities.subtareas.length;
+      }
+      if (entities.tareaComentarios?.length) {
+        await queryRunner.manager.save(
+          TareaComentario,
+          entities.tareaComentarios,
+        );
+        counts.tareaComentarios = entities.tareaComentarios.length;
       }
       if (entities.obrasTrabajadores?.length) {
         await queryRunner.manager.save(

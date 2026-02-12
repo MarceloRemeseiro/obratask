@@ -30,7 +30,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { trabajadoresApi } from '@/lib/api';
+import { trabajadoresApi, encargadosApi } from '@/lib/api';
 import {
   Trabajador,
   CreateTrabajadorDto,
@@ -40,6 +40,7 @@ import {
   TipoAusencia,
   TipoCarnet,
 } from '@/types';
+import { Switch } from '@/components/ui/switch';
 import {
   ArrowLeft,
   Save,
@@ -54,6 +55,12 @@ import {
   Phone,
   Mail,
   Building2,
+  HardHat,
+  Copy,
+  RefreshCw,
+  Link2,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
 import { format, parseISO, differenceInDays, isBefore } from 'date-fns';
 import { es } from 'date-fns/locale';
@@ -124,6 +131,10 @@ export default function TrabajadorDetailPage() {
   const [conflictDialogOpen, setConflictDialogOpen] = useState(false);
   const [conflictMessage, setConflictMessage] = useState('');
 
+  // Encargado
+  const [showPin, setShowPin] = useState(false);
+  const [regeneratingToken, setRegeneratingToken] = useState(false);
+
   // Baja warning dialog (for affected assignments)
   const [bajaWarningDialogOpen, setBajaWarningDialogOpen] = useState(false);
   const [asignacionesAfectadas, setAsignacionesAfectadas] = useState<
@@ -149,6 +160,8 @@ export default function TrabajadorDetailPage() {
         carnetConducirVencimiento: data.carnetConducirVencimiento?.split('T')[0] || '',
         reconocimientoMedicoVencimiento: data.reconocimientoMedicoVencimiento?.split('T')[0] || '',
         formacionPRLVencimiento: data.formacionPRLVencimiento?.split('T')[0] || '',
+        esEncargado: data.esEncargado || false,
+        pin: data.pin || '',
       });
       setHasChanges(false);
     } catch (error) {
@@ -192,6 +205,32 @@ export default function TrabajadorDetailPage() {
       router.push('/trabajadores');
     } catch (error) {
       alert('Error al eliminar trabajador');
+    }
+  };
+
+  const handleRegenerarToken = async () => {
+    if (!confirm('¿Regenerar el enlace público? El enlace anterior dejará de funcionar.')) return;
+    setRegeneratingToken(true);
+    try {
+      await encargadosApi.regenerarToken(id);
+      await loadTrabajador();
+    } catch (error) {
+      alert('Error al regenerar token');
+    } finally {
+      setRegeneratingToken(false);
+    }
+  };
+
+  const getPublicLink = () => {
+    if (!trabajador?.publicToken) return '';
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    return `${baseUrl}/encargado/${trabajador.publicToken}`;
+  };
+
+  const copyPublicLink = () => {
+    const link = getPublicLink();
+    if (link) {
+      navigator.clipboard.writeText(link);
     }
   };
 
@@ -651,6 +690,108 @@ export default function TrabajadorDetailPage() {
                   onChange={(e) => handleFormChange({ formacionPRLVencimiento: e.target.value })}
                 />
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Encargado */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2">
+                <HardHat className="h-4 w-4" />
+                Encargado
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="space-y-0.5">
+                  <Label htmlFor="esEncargado">Es encargado</Label>
+                  <p className="text-xs text-muted-foreground">
+                    Los encargados pueden ver y gestionar tareas desde un enlace público
+                  </p>
+                </div>
+                <Switch
+                  id="esEncargado"
+                  checked={formData.esEncargado || false}
+                  onCheckedChange={(checked) => handleFormChange({ esEncargado: checked })}
+                />
+              </div>
+
+              {formData.esEncargado && (
+                <>
+                  <div className="space-y-2">
+                    <Label htmlFor="pin">PIN de acceso</Label>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <Input
+                          id="pin"
+                          type={showPin ? 'text' : 'password'}
+                          value={formData.pin || ''}
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/\D/g, '').slice(0, 4);
+                            handleFormChange({ pin: val });
+                          }}
+                          placeholder="4 dígitos"
+                          maxLength={4}
+                          inputMode="numeric"
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-0 top-0 h-full"
+                          onClick={() => setShowPin(!showPin)}
+                        >
+                          {showPin ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                        </Button>
+                      </div>
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      El encargado usará este PIN para acceder a su panel
+                    </p>
+                  </div>
+
+                  {trabajador?.publicToken && (
+                    <div className="space-y-2">
+                      <Label>Enlace público</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          readOnly
+                          value={getPublicLink()}
+                          className="text-xs font-mono"
+                        />
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={copyPublicLink}
+                          title="Copiar enlace"
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={handleRegenerarToken}
+                          disabled={regeneratingToken}
+                          title="Regenerar enlace"
+                        >
+                          <RefreshCw className={cn("h-4 w-4", regeneratingToken && "animate-spin")} />
+                        </Button>
+                      </div>
+                      <p className="text-xs text-muted-foreground">
+                        Comparte este enlace con el encargado para que acceda a sus tareas
+                      </p>
+                    </div>
+                  )}
+
+                  {!trabajador?.publicToken && formData.esEncargado && (
+                    <p className="text-xs text-amber-600">
+                      Guarda los cambios para generar el enlace público
+                    </p>
+                  )}
+                </>
+              )}
             </CardContent>
           </Card>
 

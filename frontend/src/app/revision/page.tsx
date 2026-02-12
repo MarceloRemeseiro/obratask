@@ -15,6 +15,7 @@ import {
   Calendar,
   ExternalLink,
   User,
+  MessageSquare,
 } from 'lucide-react';
 import { revisionApi, obrasApi } from '@/lib/api';
 import type { RevisionResponse, TipoAusencia } from '@/types';
@@ -92,6 +93,7 @@ export default function RevisionPage() {
     { id: 'confirmacion', label: 'Pendientes', count: counts.asignacionesPendientes, icon: Clock },
     { id: 'tareas-vencidas', label: 'Tareas vencidas', count: counts.tareasVencidas, icon: Calendar },
     { id: 'obras-vencidas', label: 'Obras vencidas', count: counts.obrasVencidas, icon: AlertTriangle },
+    { id: 'mensajes', label: 'Mensajes', count: counts.comentariosSinLeer, icon: MessageSquare },
   ];
 
   return (
@@ -207,6 +209,18 @@ export default function RevisionPage() {
                 ))}
               </Section>
             )}
+
+            {counts.comentariosSinLeer > 0 && (
+              <Section
+                title="Mensajes de encargados"
+                icon={MessageSquare}
+                count={counts.comentariosSinLeer}
+              >
+                {data.comentariosSinLeer.map((c) => (
+                  <ComentarioSinLeerCard key={c.id} comentario={c} />
+                ))}
+              </Section>
+            )}
           </TabsContent>
 
           {/* Individual tabs */}
@@ -243,6 +257,12 @@ export default function RevisionPage() {
           <TabsContent value="obras-vencidas" className="space-y-2">
             {data.obrasVencidas.map((o) => (
               <ObraVencidaCard key={o.id} obra={o} />
+            ))}
+          </TabsContent>
+
+          <TabsContent value="mensajes" className="space-y-2">
+            {data.comentariosSinLeer.map((c) => (
+              <ComentarioSinLeerCard key={c.id} comentario={c} />
             ))}
           </TabsContent>
         </Tabs>
@@ -468,6 +488,35 @@ function ObraVencidaCard({ obra }: { obra: RevisionResponse['obrasVencidas'][0] 
           </Badge>
         </div>
         <Link href={`/obras/${obra.id}`}>
+          <Button variant="ghost" size="icon">
+            <ExternalLink className="h-4 w-4" />
+          </Button>
+        </Link>
+      </CardContent>
+    </Card>
+  );
+}
+
+function ComentarioSinLeerCard({ comentario }: { comentario: RevisionResponse['comentariosSinLeer'][0] }) {
+  return (
+    <Card>
+      <CardContent className="p-4 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center shrink-0">
+            <MessageSquare className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+          </div>
+          <div className="min-w-0">
+            <p className="font-medium text-sm truncate">{comentario.autorNombre}</p>
+            <p className="text-sm text-muted-foreground truncate">{comentario.texto}</p>
+            <p className="text-xs text-muted-foreground">
+              {comentario.tareaTitulo} · {comentario.obraNombre}
+            </p>
+          </div>
+        </div>
+        <div className="text-right text-xs text-muted-foreground shrink-0">
+          {format(new Date(comentario.createdAt), 'd MMM HH:mm', { locale: es })}
+        </div>
+        <Link href={`/obras/${comentario.obraId}`}>
           <Button variant="ghost" size="icon">
             <ExternalLink className="h-4 w-4" />
           </Button>
