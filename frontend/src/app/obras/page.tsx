@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ObraCard } from '@/components/obras/ObraCard';
 import { ObraForm } from '@/components/obras/ObraForm';
 import { obrasApi } from '@/lib/api';
@@ -73,36 +73,17 @@ export default function ObrasPage() {
         <ObraForm onSuccess={loadObras} />
       </div>
 
-      <Tabs
-        value={filtro}
-        onValueChange={(v) => setFiltro(v as typeof filtro)}
-      >
-        <div className="overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-          <TabsList className="w-max md:w-auto">
-            <TabsTrigger value="todas" className="text-xs md:text-sm">
-              Todas ({contarPorEstado()})
-            </TabsTrigger>
-            <TabsTrigger
-              value={EstadoObra.EN_PROGRESO}
-              className="text-xs md:text-sm"
-            >
-              Progreso ({contarPorEstado(EstadoObra.EN_PROGRESO)})
-            </TabsTrigger>
-            <TabsTrigger
-              value={EstadoObra.SIN_INICIAR}
-              className="text-xs md:text-sm"
-            >
-              Sin iniciar ({contarPorEstado(EstadoObra.SIN_INICIAR)})
-            </TabsTrigger>
-            <TabsTrigger
-              value={EstadoObra.COMPLETADA}
-              className="text-xs md:text-sm"
-            >
-              Completadas ({contarPorEstado(EstadoObra.COMPLETADA)})
-            </TabsTrigger>
-          </TabsList>
-        </div>
-      </Tabs>
+      <Select value={filtro} onValueChange={(v) => setFiltro(v as typeof filtro)}>
+        <SelectTrigger className="w-full">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="todas">Todas ({contarPorEstado()})</SelectItem>
+          <SelectItem value={EstadoObra.EN_PROGRESO}>En progreso ({contarPorEstado(EstadoObra.EN_PROGRESO)})</SelectItem>
+          <SelectItem value={EstadoObra.SIN_INICIAR}>Sin iniciar ({contarPorEstado(EstadoObra.SIN_INICIAR)})</SelectItem>
+          <SelectItem value={EstadoObra.COMPLETADA}>Completadas ({contarPorEstado(EstadoObra.COMPLETADA)})</SelectItem>
+        </SelectContent>
+      </Select>
 
       {obrasFiltradas.length === 0 ? (
         <div className="text-center py-16">

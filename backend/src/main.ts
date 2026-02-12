@@ -10,6 +10,7 @@ async function bootstrap() {
   app.enableCors({
     origin: [
       'http://localhost:3000',
+      /^http:\/\/192\.168\.\d+\.\d+:3000$/,
       'https://jordi.streamingpro.es',
     ],
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],

@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import {
   UserX,
@@ -63,7 +63,7 @@ export default function RevisionPage() {
 
   if (loading) {
     return (
-      <div className="p-4 md:p-6">
+      <div className="space-y-6">
         <h1 className="text-2xl font-bold mb-6">Revisión</h1>
         <div className="animate-pulse space-y-4">
           {[1, 2, 3].map((i) => (
@@ -76,7 +76,7 @@ export default function RevisionPage() {
 
   if (!data) {
     return (
-      <div className="p-4 md:p-6">
+      <div className="space-y-6">
         <h1 className="text-2xl font-bold mb-6">Revisión</h1>
         <p className="text-muted-foreground">Error al cargar datos</p>
       </div>
@@ -97,8 +97,8 @@ export default function RevisionPage() {
   ];
 
   return (
-    <div className="p-4 md:p-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Revisión</h1>
         {counts.total > 0 && (
           <Badge variant="destructive" className="text-sm">
@@ -116,156 +116,90 @@ export default function RevisionPage() {
           </CardContent>
         </Card>
       ) : (
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="flex flex-wrap h-auto gap-1 mb-4">
+        <>
+        <Select value={activeTab} onValueChange={setActiveTab}>
+          <SelectTrigger className="w-full">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
             {tabs.map((tab) => (
-              <TabsTrigger
+              <SelectItem
                 key={tab.id}
                 value={tab.id}
-                className="flex items-center gap-1.5 data-[state=active]:bg-primary data-[state=active]:text-primary-foreground"
                 disabled={tab.id !== 'all' && tab.count === 0}
               >
-                <tab.icon className="h-4 w-4" />
-                <span className="hidden sm:inline">{tab.label}</span>
-                {tab.count > 0 && (
-                  <Badge variant="secondary" className="ml-1 h-5 px-1.5 text-xs">
-                    {tab.count}
-                  </Badge>
-                )}
-              </TabsTrigger>
+                <span className="flex items-center gap-2">
+                  <tab.icon className="h-4 w-4" />
+                  {tab.label}
+                  {tab.count > 0 && (
+                    <Badge variant="secondary" className="h-5 px-1.5 text-xs">
+                      {tab.count}
+                    </Badge>
+                  )}
+                </span>
+              </SelectItem>
             ))}
-          </TabsList>
+          </SelectContent>
+        </Select>
 
-          {/* All items */}
-          <TabsContent value="all" className="space-y-6">
-            {counts.trabajadoresBaja > 0 && (
-              <Section
-                title="Personal de baja"
-                icon={UserX}
-                count={counts.trabajadoresBaja}
-              >
-                {data.trabajadoresBaja.map((t) => (
-                  <TrabajadorBajaCard key={t.id} trabajador={t} />
-                ))}
-              </Section>
-            )}
+        <div className="space-y-6">
+          {(activeTab === 'all' || activeTab === 'bajas') && counts.trabajadoresBaja > 0 && (
+            <Section title="Personal de baja" icon={UserX} count={counts.trabajadoresBaja}>
+              {data.trabajadoresBaja.map((t) => (
+                <TrabajadorBajaCard key={t.id} trabajador={t} />
+              ))}
+            </Section>
+          )}
 
-            {counts.obrasSinPersonal > 0 && (
-              <Section
-                title="Obras sin personal"
-                icon={Building2}
-                count={counts.obrasSinPersonal}
-              >
-                {data.obrasSinPersonal.map((o) => (
-                  <ObraSinPersonalCard key={o.id} obra={o} />
-                ))}
-              </Section>
-            )}
+          {(activeTab === 'all' || activeTab === 'sin-personal') && counts.obrasSinPersonal > 0 && (
+            <Section title="Obras sin personal" icon={Building2} count={counts.obrasSinPersonal}>
+              {data.obrasSinPersonal.map((o) => (
+                <ObraSinPersonalCard key={o.id} obra={o} />
+              ))}
+            </Section>
+          )}
 
-            {counts.obrasListasCerrar > 0 && (
-              <Section
-                title="Listas para cerrar"
-                icon={CheckCircle}
-                count={counts.obrasListasCerrar}
-              >
-                {data.obrasListasCerrar.map((o) => (
-                  <ObraListaCerrarCard key={o.id} obra={o} onCerrar={handleCerrarObra} />
-                ))}
-              </Section>
-            )}
+          {(activeTab === 'all' || activeTab === 'cerrar') && counts.obrasListasCerrar > 0 && (
+            <Section title="Listas para cerrar" icon={CheckCircle} count={counts.obrasListasCerrar}>
+              {data.obrasListasCerrar.map((o) => (
+                <ObraListaCerrarCard key={o.id} obra={o} onCerrar={handleCerrarObra} />
+              ))}
+            </Section>
+          )}
 
-            {counts.asignacionesPendientes > 0 && (
-              <Section
-                title="Asignaciones pendientes de confirmación"
-                icon={Clock}
-                count={counts.asignacionesPendientes}
-              >
-                {data.asignacionesPendientes.map((a) => (
-                  <AsignacionPendienteCard key={a.id} asignacion={a} />
-                ))}
-              </Section>
-            )}
+          {(activeTab === 'all' || activeTab === 'confirmacion') && counts.asignacionesPendientes > 0 && (
+            <Section title="Asignaciones pendientes" icon={Clock} count={counts.asignacionesPendientes}>
+              {data.asignacionesPendientes.map((a) => (
+                <AsignacionPendienteCard key={a.id} asignacion={a} />
+              ))}
+            </Section>
+          )}
 
-            {counts.tareasVencidas > 0 && (
-              <Section
-                title="Tareas vencidas"
-                icon={Calendar}
-                count={counts.tareasVencidas}
-              >
-                {data.tareasVencidas.map((t) => (
-                  <TareaVencidaCard key={t.id} tarea={t} />
-                ))}
-              </Section>
-            )}
+          {(activeTab === 'all' || activeTab === 'tareas-vencidas') && counts.tareasVencidas > 0 && (
+            <Section title="Tareas vencidas" icon={Calendar} count={counts.tareasVencidas}>
+              {data.tareasVencidas.map((t) => (
+                <TareaVencidaCard key={t.id} tarea={t} />
+              ))}
+            </Section>
+          )}
 
-            {counts.obrasVencidas > 0 && (
-              <Section
-                title="Obras con fecha vencida"
-                icon={AlertTriangle}
-                count={counts.obrasVencidas}
-              >
-                {data.obrasVencidas.map((o) => (
-                  <ObraVencidaCard key={o.id} obra={o} />
-                ))}
-              </Section>
-            )}
+          {(activeTab === 'all' || activeTab === 'obras-vencidas') && counts.obrasVencidas > 0 && (
+            <Section title="Obras con fecha vencida" icon={AlertTriangle} count={counts.obrasVencidas}>
+              {data.obrasVencidas.map((o) => (
+                <ObraVencidaCard key={o.id} obra={o} />
+              ))}
+            </Section>
+          )}
 
-            {counts.comentariosSinLeer > 0 && (
-              <Section
-                title="Mensajes de encargados"
-                icon={MessageSquare}
-                count={counts.comentariosSinLeer}
-              >
-                {data.comentariosSinLeer.map((c) => (
-                  <ComentarioSinLeerCard key={c.id} comentario={c} />
-                ))}
-              </Section>
-            )}
-          </TabsContent>
-
-          {/* Individual tabs */}
-          <TabsContent value="bajas" className="space-y-2">
-            {data.trabajadoresBaja.map((t) => (
-              <TrabajadorBajaCard key={t.id} trabajador={t} />
-            ))}
-          </TabsContent>
-
-          <TabsContent value="sin-personal" className="space-y-2">
-            {data.obrasSinPersonal.map((o) => (
-              <ObraSinPersonalCard key={o.id} obra={o} />
-            ))}
-          </TabsContent>
-
-          <TabsContent value="cerrar" className="space-y-2">
-            {data.obrasListasCerrar.map((o) => (
-              <ObraListaCerrarCard key={o.id} obra={o} onCerrar={handleCerrarObra} />
-            ))}
-          </TabsContent>
-
-          <TabsContent value="confirmacion" className="space-y-2">
-            {data.asignacionesPendientes.map((a) => (
-              <AsignacionPendienteCard key={a.id} asignacion={a} />
-            ))}
-          </TabsContent>
-
-          <TabsContent value="tareas-vencidas" className="space-y-2">
-            {data.tareasVencidas.map((t) => (
-              <TareaVencidaCard key={t.id} tarea={t} />
-            ))}
-          </TabsContent>
-
-          <TabsContent value="obras-vencidas" className="space-y-2">
-            {data.obrasVencidas.map((o) => (
-              <ObraVencidaCard key={o.id} obra={o} />
-            ))}
-          </TabsContent>
-
-          <TabsContent value="mensajes" className="space-y-2">
-            {data.comentariosSinLeer.map((c) => (
-              <ComentarioSinLeerCard key={c.id} comentario={c} />
-            ))}
-          </TabsContent>
-        </Tabs>
+          {(activeTab === 'all' || activeTab === 'mensajes') && counts.comentariosSinLeer > 0 && (
+            <Section title="Mensajes de encargados" icon={MessageSquare} count={counts.comentariosSinLeer}>
+              {data.comentariosSinLeer.map((c) => (
+                <ComentarioSinLeerCard key={c.id} comentario={c} />
+              ))}
+            </Section>
+          )}
+        </div>
+        </>
       )}
     </div>
   );
@@ -296,67 +230,56 @@ function Section({
 
 function TrabajadorBajaCard({ trabajador }: { trabajador: RevisionResponse['trabajadoresBaja'][0] }) {
   return (
-    <Card>
-      <CardContent className="p-4 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
-            <UserX className="h-5 w-5 text-red-600 dark:text-red-400" />
-          </div>
-          <div className="min-w-0">
-            <p className="font-medium truncate">{trabajador.nombre}</p>
-            <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>{trabajador.cargo || 'Sin cargo'}</span>
-              <span>·</span>
-              <Badge variant="outline" className="text-xs">
-                {tipoAusenciaLabels[trabajador.tipoAusencia] || trabajador.tipoAusencia}
-              </Badge>
+    <Link href={`/trabajadores/${trabajador.id}`}>
+      <Card className="hover:bg-muted/50 transition-colors">
+        <CardContent className="p-4 space-y-2">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
+              <UserX className="h-4 w-4 text-red-600 dark:text-red-400" />
             </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-medium">{trabajador.nombre}</p>
+              <p className="text-sm text-muted-foreground">{trabajador.cargo || 'Sin cargo'}</p>
+            </div>
+            <Badge variant="outline" className="text-xs shrink-0">
+              {tipoAusenciaLabels[trabajador.tipoAusencia] || trabajador.tipoAusencia}
+            </Badge>
           </div>
-        </div>
-        <div className="text-right text-sm shrink-0">
-          <p className="text-muted-foreground">
-            Desde {format(new Date(trabajador.fechaInicio), 'dd MMM', { locale: es })}
-          </p>
-          {trabajador.fechaFin ? (
-            <p className="text-muted-foreground">
-              Hasta {format(new Date(trabajador.fechaFin), 'dd MMM', { locale: es })}
-            </p>
-          ) : (
-            <p className="text-orange-600 dark:text-orange-400">Sin fecha fin</p>
-          )}
-        </div>
-        <Link href={`/trabajadores/${trabajador.id}`}>
-          <Button variant="ghost" size="icon">
-            <ExternalLink className="h-4 w-4" />
-          </Button>
-        </Link>
-      </CardContent>
-    </Card>
+          <div className="flex items-center gap-1 text-sm text-muted-foreground pl-12">
+            <span>
+              Desde {format(new Date(trabajador.fechaInicio), 'dd MMM', { locale: es })}
+            </span>
+            {trabajador.fechaFin ? (
+              <span>
+                · Hasta {format(new Date(trabajador.fechaFin), 'dd MMM', { locale: es })}
+              </span>
+            ) : (
+              <span className="text-orange-600 dark:text-orange-400">· Sin fecha fin</span>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
 
 function ObraSinPersonalCard({ obra }: { obra: RevisionResponse['obrasSinPersonal'][0] }) {
   return (
-    <Card>
-      <CardContent className="p-4 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="h-10 w-10 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center shrink-0">
-            <Building2 className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+    <Link href={`/obras/${obra.id}`}>
+      <Card className="hover:bg-muted/50 transition-colors">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center shrink-0">
+              <Building2 className="h-4 w-4 text-yellow-600 dark:text-yellow-400" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-medium">{obra.nombre}</p>
+              <p className="text-sm text-muted-foreground">Sin trabajadores asignados</p>
+            </div>
           </div>
-          <div className="min-w-0">
-            <p className="font-medium truncate">{obra.nombre}</p>
-            <p className="text-sm text-muted-foreground">
-              Sin trabajadores asignados
-            </p>
-          </div>
-        </div>
-        <Link href={`/obras/${obra.id}`}>
-          <Button variant="outline" size="sm">
-            Asignar personal
-          </Button>
-        </Link>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
 
@@ -369,22 +292,23 @@ function ObraListaCerrarCard({
 }) {
   return (
     <Card>
-      <CardContent className="p-4 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="h-10 w-10 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
-            <CheckCircle className="h-5 w-5 text-green-600 dark:text-green-400" />
+      <CardContent className="p-4 space-y-3">
+        <div className="flex items-center gap-3">
+          <div className="h-9 w-9 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center shrink-0">
+            <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400" />
           </div>
-          <div className="min-w-0">
-            <p className="font-medium truncate">{obra.nombre}</p>
+          <div className="min-w-0 flex-1">
+            <p className="font-medium">{obra.nombre}</p>
             <p className="text-sm text-muted-foreground">
               {obra.tareasCompletadas} tarea{obra.tareasCompletadas !== 1 ? 's' : ''} completada{obra.tareasCompletadas !== 1 ? 's' : ''}
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 pl-12">
           <Link href={`/obras/${obra.id}`}>
-            <Button variant="ghost" size="icon">
-              <ExternalLink className="h-4 w-4" />
+            <Button variant="outline" size="sm">
+              <ExternalLink className="h-3.5 w-3.5 mr-1.5" />
+              Ver obra
             </Button>
           </Link>
           <Button size="sm" onClick={() => onCerrar(obra.id)}>
@@ -402,34 +326,26 @@ function AsignacionPendienteCard({
   asignacion: RevisionResponse['asignacionesPendientes'][0];
 }) {
   return (
-    <Card>
-      <CardContent className="p-4 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="h-10 w-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
-            <Clock className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+    <Link href={`/obras/${asignacion.obraId}`}>
+      <Card className="hover:bg-muted/50 transition-colors">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center shrink-0">
+              <Clock className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-medium">{asignacion.trabajadorNombre}</p>
+              <p className="text-sm text-muted-foreground">
+                en {asignacion.obraNombre} · {format(new Date(asignacion.fechaInicio), 'dd MMM', { locale: es })}
+                {asignacion.fechaFin && (
+                  <> - {format(new Date(asignacion.fechaFin), 'dd MMM', { locale: es })}</>
+                )}
+              </p>
+            </div>
           </div>
-          <div className="min-w-0">
-            <p className="font-medium truncate">{asignacion.trabajadorNombre}</p>
-            <p className="text-sm text-muted-foreground truncate">
-              en {asignacion.obraNombre}
-            </p>
-          </div>
-        </div>
-        <div className="text-right text-sm shrink-0">
-          <p className="text-muted-foreground">
-            {format(new Date(asignacion.fechaInicio), 'dd MMM', { locale: es })}
-            {asignacion.fechaFin && (
-              <> - {format(new Date(asignacion.fechaFin), 'dd MMM', { locale: es })}</>
-            )}
-          </p>
-        </div>
-        <Link href={`/obras/${asignacion.obraId}`}>
-          <Button variant="ghost" size="icon">
-            <ExternalLink className="h-4 w-4" />
-          </Button>
-        </Link>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
 
@@ -439,89 +355,76 @@ function TareaVencidaCard({ tarea }: { tarea: RevisionResponse['tareasVencidas']
   );
 
   return (
-    <Card>
-      <CardContent className="p-4 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="h-10 w-10 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center shrink-0">
-            <Calendar className="h-5 w-5 text-orange-600 dark:text-orange-400" />
+    <Link href={`/obras/${tarea.obraId}`}>
+      <Card className="hover:bg-muted/50 transition-colors">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center shrink-0">
+              <Calendar className="h-4 w-4 text-orange-600 dark:text-orange-400" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-medium">{tarea.titulo}</p>
+              <p className="text-sm text-muted-foreground">en {tarea.obraNombre}</p>
+            </div>
+            <Badge variant="destructive" className="text-xs shrink-0">
+              {diasVencida}d
+            </Badge>
           </div>
-          <div className="min-w-0">
-            <p className="font-medium truncate">{tarea.titulo}</p>
-            <p className="text-sm text-muted-foreground truncate">
-              en {tarea.obraNombre}
-            </p>
-          </div>
-        </div>
-        <div className="text-right shrink-0">
-          <Badge variant="destructive" className="text-xs">
-            {diasVencida} día{diasVencida !== 1 ? 's' : ''} vencida
-          </Badge>
-        </div>
-        <Link href={`/obras/${tarea.obraId}`}>
-          <Button variant="ghost" size="icon">
-            <ExternalLink className="h-4 w-4" />
-          </Button>
-        </Link>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
 
 function ObraVencidaCard({ obra }: { obra: RevisionResponse['obrasVencidas'][0] }) {
   return (
-    <Card>
-      <CardContent className="p-4 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
-            <AlertTriangle className="h-5 w-5 text-red-600 dark:text-red-400" />
+    <Link href={`/obras/${obra.id}`}>
+      <Card className="hover:bg-muted/50 transition-colors">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center shrink-0">
+              <AlertTriangle className="h-4 w-4 text-red-600 dark:text-red-400" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="font-medium">{obra.nombre}</p>
+              <p className="text-sm text-muted-foreground">
+                Fin previsto: {format(new Date(obra.fechaFinPrev), 'dd MMM yyyy', { locale: es })}
+              </p>
+            </div>
+            <Badge variant="destructive" className="text-xs shrink-0">
+              {obra.diasVencida}d
+            </Badge>
           </div>
-          <div className="min-w-0">
-            <p className="font-medium truncate">{obra.nombre}</p>
-            <p className="text-sm text-muted-foreground">
-              Fecha fin prevista: {format(new Date(obra.fechaFinPrev), 'dd MMM yyyy', { locale: es })}
-            </p>
-          </div>
-        </div>
-        <div className="text-right shrink-0">
-          <Badge variant="destructive" className="text-xs">
-            {obra.diasVencida} día{obra.diasVencida !== 1 ? 's' : ''} de retraso
-          </Badge>
-        </div>
-        <Link href={`/obras/${obra.id}`}>
-          <Button variant="ghost" size="icon">
-            <ExternalLink className="h-4 w-4" />
-          </Button>
-        </Link>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }
 
 function ComentarioSinLeerCard({ comentario }: { comentario: RevisionResponse['comentariosSinLeer'][0] }) {
   return (
-    <Card>
-      <CardContent className="p-4 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="h-10 w-10 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center shrink-0">
-            <MessageSquare className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+    <Link href={`/obras/${comentario.obraId}`}>
+      <Card className="hover:bg-muted/50 transition-colors">
+        <CardContent className="p-4">
+          <div className="flex items-center gap-3">
+            <div className="h-9 w-9 rounded-full bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center shrink-0">
+              <MessageSquare className="h-4 w-4 text-purple-600 dark:text-purple-400" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center justify-between gap-2">
+                <p className="font-medium text-sm">{comentario.autorNombre}</p>
+                <span className="text-xs text-muted-foreground shrink-0">
+                  {format(new Date(comentario.createdAt), 'd MMM HH:mm', { locale: es })}
+                </span>
+              </div>
+              <p className="text-sm text-muted-foreground truncate">{comentario.texto}</p>
+              <p className="text-xs text-muted-foreground">
+                {comentario.tareaTitulo} · {comentario.obraNombre}
+              </p>
+            </div>
           </div>
-          <div className="min-w-0">
-            <p className="font-medium text-sm truncate">{comentario.autorNombre}</p>
-            <p className="text-sm text-muted-foreground truncate">{comentario.texto}</p>
-            <p className="text-xs text-muted-foreground">
-              {comentario.tareaTitulo} · {comentario.obraNombre}
-            </p>
-          </div>
-        </div>
-        <div className="text-right text-xs text-muted-foreground shrink-0">
-          {format(new Date(comentario.createdAt), 'd MMM HH:mm', { locale: es })}
-        </div>
-        <Link href={`/obras/${comentario.obraId}`}>
-          <Button variant="ghost" size="icon">
-            <ExternalLink className="h-4 w-4" />
-          </Button>
-        </Link>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </Link>
   );
 }

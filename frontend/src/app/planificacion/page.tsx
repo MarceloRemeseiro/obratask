@@ -5,7 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
   SelectContent,
@@ -84,6 +83,7 @@ export default function PlanificacionPage() {
   const [currentWeek, setCurrentWeek] = useState(new Date());
   const [selectedTrabajador, setSelectedTrabajador] =
     useState<TrabajadorConAsignaciones | null>(null);
+  const [vista, setVista] = useState<'resumen' | 'semana'>('resumen');
 
   useEffect(() => {
     Promise.all([trabajadoresApi.getAll(), obrasApi.getAll()])
@@ -193,41 +193,58 @@ export default function PlanificacionPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold">Planificacion</h1>
-          <p className="text-muted-foreground">
-            Visualiza donde esta y estara cada trabajador
-          </p>
-        </div>
-        <div className="w-full sm:w-64">
-          <Select
-            value={selectedTrabajador?.id || 'all'}
-            onValueChange={handleSelectTrabajador}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Seleccionar trabajador" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todos los trabajadores</SelectItem>
-              {trabajadores.map((t) => (
-                <SelectItem key={t.id} value={t.id}>
-                  {t.nombre}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold">Planificacion</h1>
+        <p className="text-muted-foreground">
+          Visualiza donde esta y estara cada trabajador
+        </p>
       </div>
 
-      <Tabs defaultValue="resumen">
-        <TabsList>
-          <TabsTrigger value="resumen">Resumen</TabsTrigger>
-          <TabsTrigger value="semana">Vista Semanal</TabsTrigger>
-        </TabsList>
+      <Select
+        value={selectedTrabajador?.id || 'all'}
+        onValueChange={handleSelectTrabajador}
+      >
+        <SelectTrigger className="w-full">
+          <SelectValue placeholder="Trabajador" />
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">Todos los trabajadores</SelectItem>
+          {trabajadores.map((t) => (
+            <SelectItem key={t.id} value={t.id}>
+              {t.nombre}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
 
-        {/* Vista Resumen */}
-        <TabsContent value="resumen" className="mt-4">
+      <div className="flex rounded-lg border overflow-hidden">
+        <button
+          className={cn(
+            'flex-1 py-2.5 text-sm font-medium transition-colors',
+            vista === 'resumen'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-background text-muted-foreground hover:bg-muted'
+          )}
+          onClick={() => setVista('resumen')}
+        >
+          Resumen
+        </button>
+        <button
+          className={cn(
+            'flex-1 py-2.5 text-sm font-medium transition-colors',
+            vista === 'semana'
+              ? 'bg-primary text-primary-foreground'
+              : 'bg-background text-muted-foreground hover:bg-muted'
+          )}
+          onClick={() => setVista('semana')}
+        >
+          Vista Semanal
+        </button>
+      </div>
+
+      {/* Vista Resumen */}
+      {vista === 'resumen' && (
+        <>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-4">
             {(selectedTrabajador ? [selectedTrabajador] : trabajadores).map((trabajador) => {
               const asignacionActual = getAsignacionActual(trabajador);
@@ -485,10 +502,11 @@ export default function PlanificacionPage() {
               </CardContent>
             </Card>
           )}
-        </TabsContent>
+        </>
+      )}
 
-        {/* Vista Semanal */}
-        <TabsContent value="semana" className="mt-4">
+      {/* Vista Semanal */}
+      {vista === 'semana' && (
           <Card>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
@@ -635,8 +653,7 @@ export default function PlanificacionPage() {
               </table>
             </CardContent>
           </Card>
-        </TabsContent>
-      </Tabs>
+      )}
     </div>
   );
 }
