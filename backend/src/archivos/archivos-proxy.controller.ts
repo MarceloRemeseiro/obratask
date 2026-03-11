@@ -10,9 +10,11 @@ import {
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import type { Response } from 'express';
 import { ArchivosService } from './archivos.service';
+import { Public } from '../auth/public.decorator';
 
 @ApiTags('Files Proxy')
 @Controller('files')
+@Public()
 export class ArchivosProxyController {
   constructor(private readonly archivosService: ArchivosService) {}
 
