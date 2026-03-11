@@ -100,13 +100,15 @@ export function FotosTab({ obraId }: FotosTabProps) {
   };
 
   const handleDelete = async (foto: Archivo) => {
-    if (!confirm('¿Eliminar esta foto?')) return;
+    const fotoId = foto.id;
+    if (!window.confirm('¿Eliminar esta foto?')) return;
     try {
-      await archivosApi.delete(foto.id);
+      await archivosApi.delete(fotoId);
       setSelectedFoto(null);
-      loadFotos();
+      await loadFotos();
     } catch (error) {
       console.error('Error deleting:', error);
+      alert('Error al eliminar la foto');
     }
   };
 
@@ -233,14 +235,20 @@ export function FotosTab({ obraId }: FotosTabProps) {
                 <Button
                   size="icon"
                   variant="secondary"
-                  onClick={() => handleDownload(selectedFoto)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDownload(selectedFoto);
+                  }}
                 >
                   <Download className="h-4 w-4" />
                 </Button>
                 <Button
                   size="icon"
                   variant="destructive"
-                  onClick={() => handleDelete(selectedFoto)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDelete(selectedFoto);
+                  }}
                 >
                   <Trash2 className="h-4 w-4" />
                 </Button>
