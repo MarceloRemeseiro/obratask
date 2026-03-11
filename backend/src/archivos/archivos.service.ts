@@ -6,6 +6,7 @@ import {
   S3Client,
   PutObjectCommand,
   DeleteObjectCommand,
+  GetObjectCommand,
 } from '@aws-sdk/client-s3';
 import { v4 as uuid } from 'uuid';
 import { Archivo, TipoArchivo } from '../database/entities/archivo.entity';
@@ -72,7 +73,7 @@ export class ArchivosService {
       descripcion,
       tipo: file.mimetype,
       tipoArchivo,
-      url: `${this.publicEndpoint}/${this.bucket}/${fileKey}`,
+      url: `/api/files/${fileKey}`,
       tamanio: file.size,
       obraId,
       tareaId,
@@ -109,8 +110,31 @@ export class ArchivosService {
 
   async getSignedUrl(id: string): Promise<string> {
     const archivo = await this.findOne(id);
-    // Return public URL directly (bucket has public read access)
-    return `${this.publicEndpoint}/${this.bucket}/${archivo.nombre}`;
+    // Return proxy URL (Garage doesn't support public anonymous access)
+    return `/api/files/${archivo.nombre}`;
+  }
+
+  async getFileFromS3(
+    key: string,
+  ): Promise<{ buffer: Buffer; contentType: string; contentLength: number }> {
+    const response = await this.s3Client.send(
+      new GetObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+      }),
+    );
+
+    const chunks: Uint8Array[] = [];
+    for await (const chunk of response.Body as AsyncIterable<Uint8Array>) {
+      chunks.push(chunk);
+    }
+    const buffer = Buffer.concat(chunks);
+
+    return {
+      buffer,
+      contentType: response.ContentType || 'application/octet-stream',
+      contentLength: response.ContentLength || buffer.length,
+    };
   }
 
   async remove(id: string): Promise<void> {
